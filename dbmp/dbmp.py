@@ -359,6 +359,15 @@ class WSFactory(WebSocketServerFactory):
         self.WS_send(socket, {
                      "type": "password",
                      "password_set": not not objects['config'].get('pwd')})
+        # Send Google credentials to newly connected client
+        credentials = {
+            "key": objects['config'].get("GOOGLE_KEY"),
+            "cx": objects['config'].get("GOOGLE_CX")
+        }
+        self.WS_send(socket, {"type": "google", "google": credentials})
+        self.WS_send(socket, {
+                     "type": "password",
+                     "password_set": not not objects['config'].get('pwd')})
 
     def WS_remove(self, socket):
         obj = socket.requested_object

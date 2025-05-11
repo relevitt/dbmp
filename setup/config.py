@@ -52,3 +52,4 @@ SONOS_REGION_SPOTIFY = 'EU'
 # soco.discover() fails to find anything
 #SONOS_ZONES = ['192.168.1.185', '192.168.1.76']
 SONOS_ZONES = []
+

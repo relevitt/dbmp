@@ -279,6 +279,9 @@ W.data.WS_receive = function (event) {
     case "hostname":
       document.title = `dbmp on ${items.hostname}`;
       break;
+    case "google":
+      W.data.google = items.google;
+      break;
     case "password":
       // true or false
       W.data.password_set = items.password_set;
