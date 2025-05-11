@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Check if the process is already running
+if [[ -z $(pgrep -f "python3 -B -m dbmp.dbmp") ]]; then
+    echo "No instance running. Launching DBMP..."
+    # Start DBMP and redirect stderr to timestamped log file
+    python3 -B -m dbmp.dbmp 2> >(tee "$HOME/.dbmp/stderr.txt")
+else
+    echo "DBMP is already running."
+    exit 1
+fi
+

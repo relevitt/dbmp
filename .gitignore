@@ -1,0 +1,20 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Node modules
+**/node_modules/
+
+# Editor settings
+.vscode/
+
+# Internal dev data
+stocks/
+Screenshots/
+
+# Machine-specific scripts
+launch_gnome_terminal.sh
+
+# TODOs and personal notes
+*.txt
+

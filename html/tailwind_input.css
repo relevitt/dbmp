@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  progress {
+    @apply appearance-none w-[160px] h-[16px];
+  }
+
+  progress::-webkit-progress-bar {
+    background-color: #eee;
+    border-radius: 6px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.25);
+  }
+
+  progress::-webkit-progress-value {
+    background-color: gray;
+    border-radius: 5px;
+  }
+}
+
+@layer components {
+  .W-button {
+    @apply cursor-pointer px-1 py-1 ml-1 border border-gray-300 hover:bg-gray-300;
+  }
+  .W-button input {
+    @apply w-0 outline-none border-0 bg-transparent;
+  }
+  .W-menu-button {
+    @apply w-6 h-6 cursor-pointer bg-no-repeat bg-[url('icons/menu.png')] hover:bg-gray-400;
+  }
+  #queue li.selected div {
+    @apply bg-gray-300;
+  }
+  .search-results-list li.selected {
+    @apply bg-gray-300;
+  }
+  .search-results-list li.selected:hover {
+    @apply bg-gray-350;
+  }
+  #quarantine-listing li.selected div {
+    @apply bg-gray-300 border-t border-gray-400;
+  }
+  #qedit-listing li.selected div {
+    @apply bg-gray-300;
+  }
+  .list-item.selected {
+    @apply bg-gray-200 hover:bg-gray-350;
+  }
+  .text-track {
+    @apply font-sans font-semibold lg:font-normal flex;
+  }
+  .text-track-noicon {
+    @apply font-sans font-semibold lg:font-normal;
+  }
+  .text-artist {
+    @apply font-sans flex;
+  }
+  .text-artist-noicon {
+    @apply font-sans;
+  }
+  .text-album {
+    @apply font-sans text-sm lg:text-base italic lg:not-italic flex;
+  }
+  .text-album-noicon {
+    @apply font-sans text-sm lg:text-base;
+  }
+  .text-track::before {
+    content: "\f001"; /* Unicode for fa-person */
+    color: #9ca3af;
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900; /* Ensures solid style */
+    width: 1.5rem; /* Adjust spacing */
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+  @media (min-width: 1024px) {
+    .text-track::before {
+      content: none; /* Hide icon on large screens */
+    }
+  }
+  .text-artist::before {
+    content: "\f183"; /* Unicode for fa-person */
+    color: #9ca3af;
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900; /* Ensures solid style */
+    width: 1.5rem; /* Adjust spacing */
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+  @media (min-width: 1024px) {
+    .text-artist::before {
+      content: none; /* Hide icon on large screens */
+    }
+  }
+  .text-album::before {
+    content: "\f51f"; /* Unicode for fa-compact-disc */
+    color: #9ca3af;
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900; /* Ensures solid style */
+    font-style: normal;
+    width: 1.5rem;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+  @media (min-width: 1024px) {
+    .text-album::before {
+      content: none; /* Hide icon on large screens */
+    }
+  }
+}
+
+@layer utilities {
+  .border-t-dashed {
+    border-top-style: dashed;
+  }
+}

@@ -1,0 +1,5 @@
+__appname__ = "dbmp"
+__version__ = "1.1.0"
+__author__ = "Richard Levitt"
+__license__ = "MIT"
+__url__ = "https://github.com/relevitt/dbmp"

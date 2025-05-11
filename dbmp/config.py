@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+
+from .paths import raw_config
+import os
+import sys
+
+PORT = raw_config.get("PORT")
+WS_PORT = raw_config.get("WS_PORT")
+SP_PORT = raw_config.get("SP_PORT")
+SSL_PORT = raw_config.get("SSL_PORT")
+WSS_PORT = raw_config.get("WSS_PORT")
+SPOTIFY_CLIENT_ID = raw_config.get("SPOTIFY_CLIENT_ID")
+SPOTIFY_REDIRECT_URI = raw_config.get("SPOTIFY_REDIRECT_URI")
+SONOS_REGION_SPOTIFY = raw_config.get("SONOS_REGION_SPOTIFY")
+SONOS_ZONES = raw_config.get("SONOS_ZONES")
+ERRLOG_FILE = sys.argv[1] if len(
+    sys.argv) > 1 else os.path.expanduser("~/.dbmp/stderr.txt")
+ERRLOG_TAIL_EXECUTABLE = "/usr/bin/tail"
+ERRLOG_TAIL_ARGS = ["tail", "-f", "-n", "+0", ERRLOG_FILE]

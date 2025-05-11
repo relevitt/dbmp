@@ -1,0 +1,1612 @@
+<!doctype html>
+<html lang="en">
+  <head class="border-4 border-green-300">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>dbmp</title>
+    <link rel="stylesheet" type="text/css" href="loader.css" />
+    <link rel="stylesheet" type="text/css" href="auto-complete.css" />
+    <link rel="stylesheet" type="text/css" href="tailwind_output.css" />
+    <link rel="manifest" href="manifest.json" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script>
+      var W = {};
+    </script>
+    <script src="css.js"></script>
+    <script src="util.js"></script>
+    <script src="keyboard.js"></script>
+    <script src="button.js"></script>
+    <script src="menu.js"></script>
+    <script src="popup.js"></script>
+    <script src="google.js"></script>
+    <script src="coverartarchive.js"></script>
+    <script src="system.js"></script>
+    <script src="logging.js"></script>
+    <script src="dataObject.js"></script>
+    <script src="queue_commands.js"></script>
+    <script src="queue_menus.js"></script>
+    <script src="queue.js"></script>
+    <script src="queue_selecter_menus.js"></script>
+    <script src="queue_selecter.js"></script>
+    <script src="quarantine.js"></script>
+    <script src="qedit.js"></script>
+    <script src="qfile.js"></script>
+    <script src="data.js"></script>
+    <script src="player.js"></script>
+    <script src="cover.js"></script>
+    <script src="search_top.js"></script>
+    <script src="search.js"></script>
+    <script src="search_edit.js"></script>
+    <script src="search_menus.js"></script>
+    <script src="search_menu_utilities.js"></script>
+    <script src="import.js"></script>
+    <script src="paginate.js"></script>
+    <script src="spotify.js"></script>
+    <script src="auto-complete.min.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/service-worker.js");
+      }
+    </script>
+    <style></style>
+  </head>
+  <!-- We hide overflow on <body>, because there are lots of initially
+ hidden elements, like popups, that display below the full screen height.
+ There are other ways of dealing with them if overflow becomes a problem -->
+  <body class="h-screen w-screen max-h-[100%] max-w-[100%] overflow-hidden">
+    <!-- Outer div to hold the three main elements -->
+    <div
+      class="flex flex-col h-screen w-screen max-h-[100%] max-w-[100%] gap-3 overflow-hidden"
+    >
+      <div class="flex flex-grow lg:h-full overflow-hidden">
+        <!--Queue-selecter-->
+        <div
+          id="queue-selecter-top"
+          class="hidden lg:flex flex-col w-screen lg:w-auto lg:basis-1/5 lg:h-auto pt-1.5 px-4"
+        >
+          <div
+            id="system-selecter"
+            class="flex justify-start flex-wrap [&>span]:ml-0 [&>span]:mb-0.5"
+          >
+            <span id="system-player" class="W-button mr-1.5">Player</span>
+            <span id="system-sonos" class="W-button">Sonos</span>
+          </div>
+          <div id="queue-selecter-heading" class="pt-6">Queues:</div>
+          <div id="queue-selecter-add-frame" class="pt-4 pr-4">
+            <div
+              id="queue-selecter-add"
+              class="queue-selecter border-t border-b border-gray-300 mt-[-1px] pt-4 pb-4"
+            >
+              <span class="queue-selecter-link">+ New Queue</span>
+            </div>
+          </div>
+          <div id="queue-selecter" class="overflow-auto">
+            <div
+              class="queue-selecter-item w-full flex items-center justify-between"
+            >
+              <div
+                class="queue-selecter queue-selecter-item-innerframe border-t border-b border-gray-300 mt-[-1px] pt-2 pb-2 w-[calc(100%-16px)] flex items-center justify-between"
+              >
+                <span
+                  class="queue-selecter-item-f1 inline-block w-[calc(100%-28px)] ml-1 leading-6"
+                ></span>
+                <span
+                  class="queue-selecter-item-f2 inline-block w-6 h-6"
+                ></span>
+              </div>
+              <span class="queue-selecter-item-f3 w-4 h-6"></span>
+            </div>
+            <div class="queue-selecter-subheading mt-7 mb-4">S1 Groups:</div>
+          </div>
+        </div>
+        <!--The Queue-->
+        <div
+          id="queue-div-frame"
+          class="hidden lg:flex flex-col w-full lg:basis-3/5 pt-1.5 px-2 pb-4"
+        >
+          <div
+            id="queue-div-header"
+            class="flex justify-between items-start lg:flex-1"
+          >
+            <div id="queue-header-left" class="flex flex-col">
+              <span id="queue-header-text" class="pl-1 mb-1 border border-white"
+                >Queue</span
+              >
+              <span
+                id="queue-span-name"
+                class="pl-1 text-[200%] border border-white"
+              ></span>
+            </div>
+            <div id="queue-header-right" class="hidden lg:flex justify-end">
+              <span
+                class="queue-search W-button w-8 h-8 mb-0.5 bg-no-repeat bg-center bg-[url('/icons/search.png')]"
+              ></span>
+              <span
+                class="queue-system-menu W-button w-8 h-8 mb-0.5 bg-no-repeat bg-center bg-[url('/icons/system.png')]"
+              ></span>
+            </div>
+          </div>
+          <ul id="queue-paginator" class="flex items-center mt-4 mb-6"></ul>
+          <ul
+            id="queue"
+            class="queue pl-0 pt-1 flex-[5] lg:flex-[9] overflow-auto m-0 text-0"
+            data-select-multiple="false"
+          >
+            <li draggable="true" class="cursor-pointer">
+              <div
+                class="grid grid-cols-[40px_auto_50px_24px] grid-rows-[auto_auto_auto] border-t border-gray-300 lg:grid-cols-[40px_2fr_3fr_3fr_50px_24px] lg:grid-rows-1 lg:auto-rows-fr pb-1 lg:pb-0"
+              >
+                <!-- Column 1: Fixed 28px -->
+                <span
+                  class="f1-outer inline-block order-1 p-0 m-0 h-8 overflow-hidden"
+                >
+                  <span
+                    class="f1 inline-block pt-[0.2em] pb-[0.2em] overflow-hidden w-[1.75em]"
+                  ></span>
+                </span>
+
+                <!-- Column 1a: Fixed 28px -->
+                <span
+                  class="f1a inline-block lg:hidden col-start-1 row-start-2 p-0 m-0 h-8 w-8 bg-gray-300 bg-center bg-[url('icons/play_white.png')] overflow-hidden"
+                ></span>
+
+                <!-- Column 2: f2 1/4 of free space -->
+                <span
+                  class="f2 text-artist self-start col-start-2 row-start-2 lg:col-start-2 lg:row-start-1 lg:col-span-1 lg:my-1 font-medium overflow-hidden"
+                ></span>
+
+                <!-- Column 3: f3 3/8ths of free space -->
+                <span
+                  class="f3 text-album self-start col-start-2 row-start-3 lg:col-start-3 lg:row-start-1 lg:col-span-1 lg:my-1 lg:pl-2 overflow-hidden"
+                ></span>
+
+                <!-- Column 4: f4 3/8ths of free space -->
+                <span
+                  class="f4 text-track self-start col-start-2 lg:col-start-4 row-start-1 mt-1 lg:my-1 lg:pl-2 overflow-hidden"
+                ></span>
+
+                <!-- Column 5: Fixed 50px -->
+                <span
+                  class="f5 flex self-start pt-[6px] lg:pt-0 col-start-3 lg:col-start-5 row-start-1 text-sm lg:text-base overflow-hidden"
+                ></span>
+
+                <!-- Column 6: Fixed 24px -->
+                <span
+                  class="f6 inline-block col-start-4 lg:col-start-6 row-start-1 pt-[0.2em] pb-[0.2em] overflow-hidden w-6 h-8 bg-center bg-no-repeat bg-[url('icons/black_x.png')] hover:bg-gray-300"
+                ></span>
+
+                <!-- Column 7 -->
+                <div
+                  class="f7 hidden col-start-3 row-start-2 self-end items-end gap-[2px] h-[12px]"
+                >
+                  <span class="f71 w-[3px] bg-gray-500"></span>
+                  <span class="f72 w-[3px] bg-gray-500"></span>
+                  <span class="f73 w-[3px] bg-gray-500"></span>
+                  <span class="f74 w-[3px] bg-gray-500"></span>
+                  <span class="f75 w-[3px] bg-gray-500"></span>
+                </div>
+
+                <!-- Column 8 -->
+                <svg
+                  class="f8 lg:hidden col-start-4 row-start-2 row-span-2 mt-2 w-6 h-6 text-gray-700 hover:text-gray-900 cursor-pointer"
+                  xmlns="https://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <circle cx="12" cy="5" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="12" cy="19" r="2" />
+                </svg>
+              </div>
+            </li>
+            <li draggable="true" class="cursor-pointer">
+              <div
+                class="grid grid-cols-[40px_auto_50px] grid-rows-[auto_auto_auto] border-t border-gray-300 lg:grid-cols-[40px_2fr_3fr_3fr_50px] lg:grid-rows-1"
+              >
+                <!-- Column 1: Fixed 28px -->
+                <span
+                  class="f1-outer inline-block order-1 p-0 m-0 h-6 overflow-hidden"
+                >
+                  <span
+                    class="f1 inline-block pt-[0.2em] pb-[0.2em] overflow-hidden w-[1.75em]"
+                  ></span>
+                </span>
+
+                <!-- Column 2: f2 1/4 of free space -->
+                <span
+                  class="f2 text-artist-noicon inline-block col-start-2 row-start-2 lg:col-start-2 lg:row-start-1 lg:col-span-1 font-medium lg:pt-[0.2em] lg:pb-[0.2em] overflow-hidden"
+                ></span>
+
+                <!-- Column 3: f3 3/8ths of free space -->
+                <span
+                  class="f3 text-album-noicon inline-block col-start-2 row-start-3 lg:col-start-3 lg:row-start-1 lg:col-span-1 lg:pt-[0.2em] lg:pb-[0.2em] lg:pl-2 overflow-hidden"
+                ></span>
+
+                <!-- Column 4: f4 3/8ths of free space -->
+                <span
+                  class="f4 text-track-noicon inline-block col-start-2 lg:col-start-4 row-start-1 pt-[0.2em] pb-[0.2em] lg:pl-2 overflow-hidden"
+                ></span>
+
+                <!-- Column 5: Fixed 50px -->
+                <span
+                  class="f5 inline-block col-start-3 lg:col-start-5 row-start-1 pt-[0.2em] pb-[0.2em] overflow-hidden"
+                ></span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <br />
+        <!--The Player-->
+        <div
+          id="player"
+          class="flex flex-col flex-grow max-h-[100%] w-screen lg:w-auto lg:basis-1/5 lg:h-auto overflow-auto"
+        >
+          <div
+            id="player-image-box"
+            class="relative w-[90%] mx-auto mt-2 mb-0.5 before:block before:pt-[100%]"
+          >
+            <div
+              id="player-image"
+              class="absolute inset-0 border border-gray-300 flex items-center justify-center text-[150%] bg-no-repeat bg-center bg-contain bg-[url('icons/blank.png')]"
+            ></div>
+          </div>
+          <div
+            id="player-player"
+            class="flex flex-col items-center lg:items-stretch flex-grow min-h-0"
+          >
+            <div
+              id="player-song"
+              class="w-[92%] text-center mt-2 mx-auto font-bold"
+            ></div>
+            <div
+              id="player-artist"
+              class="w-[92%] text-center mt-2 mx-auto"
+            ></div>
+            <div
+              id="player-progress-container"
+              class="relative h-6 w-[85%] mt-4 mb-5 lg:mb-0 mx-auto"
+            >
+              <div
+                id="player-progress"
+                class="relative w-[calc(100%-24px)] mx-auto top-[10px] h-[3px] border border-gray-300 rounded-full"
+              >
+                <div
+                  id="player-progress-bar"
+                  class="bg-gray-400 w-0 h-[3px] rounded-full"
+                ></div>
+              </div>
+              <img
+                id="player-progress-handle"
+                class="absolute top-0 left-0 max-h-6 max-w-6 cursor-pointer"
+                src="icons/circle.png"
+              />
+            </div>
+            <div
+              id="player-progress-counter"
+              class="relative w-[calc(85%-22px)] mx-auto text-xs"
+            >
+              <span class="absolute left-0"></span>
+              <span class="absolute right-0"></span>
+            </div>
+            <div
+              id="player-controls"
+              class="relative mt-10 lg:mt-4 mx-auto mb-4 flex justify-center space-x-4 lg:space-x-2"
+            >
+              <button id="player-controls-vol" class="w-8 h-8">
+                <i
+                  class="fas fa-volume-up text-3xl lg:text-xl text-gray-400"
+                ></i>
+              </button>
+              <button id="player-controls-prev" class="w-8 h-8">
+                <i
+                  class="fas fa-backward text-3xl lg:text-xl text-gray-400"
+                ></i>
+              </button>
+              <button id="player-controls-stop" class="w-8 h-8">
+                <i class="fas fa-stop text-3xl lg:text-xl text-gray-400"></i>
+              </button>
+              <button id="player-controls-play" class="w-8 h-8">
+                <i class="fas fa-play text-3xl lg:text-xl text-gray-400"></i>
+              </button>
+              <button id="player-controls-next" class="w-8 h-8">
+                <i class="fas fa-forward text-3xl lg:text-xl text-gray-400"></i>
+              </button>
+            </div>
+            <div id="player-volume-outer">
+              <div
+                class="player-volume-div min-w-[250px] lg:min-w-0 mb-6 last:mb-0"
+              >
+                <div
+                  class="player-volume-name w-[calc(85%-24px)] mx-auto mt-4 mb-1 lg:text-sm"
+                ></div>
+                <div
+                  class="player-volume-container relative h-6 w-[85%] mx-auto"
+                >
+                  <div
+                    class="player-volume relative w-[calc(100%-24px)] mx-auto top-[10px] h-[3px] border border-gray-300 rounded-full"
+                  >
+                    <div
+                      class="player-volume-bar bg-gray-400 w-0 h-[3px] rounded-full"
+                    ></div>
+                  </div>
+                  <img
+                    class="player-volume-handle absolute top-0 left-0 max-h-6 max-w-6 cursor-pointer"
+                    src="icons/circle.png"
+                  />
+                  <span
+                    class="absolute top-[-12px] left-0 h-[14px] w-[20px] text-center text-xs border border-gray-300 invisible"
+                  ></span>
+                </div>
+                <div
+                  class="player-volume-speakers relative w-[calc(85%-24px)] mt-2 lg:mt-0 mb-8 mx-auto flex justify-between"
+                >
+                  <button class="cursor-pointer h-[13px] w-[18px]">
+                    <i
+                      class="fas fa-volume-off text-lg lg:text-sm text-gray-400"
+                    ></i>
+                  </button>
+                  <button class="cursor-pointer h-[13px] w-[18px]">
+                    <i
+                      class="fas fa-volume-up text-lg lg:text-sm text-gray-400"
+                    ></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="spacer flex lg:hidden flex-grow"></div>
+            <div
+              id="player-volume-button"
+              class="cursor-pointer hover:bg-gray-300 m-5 px-1 py-1 border border-gray-300 lg:hidden"
+            >
+              Volume Controls
+            </div>
+            <div class="spacer flex lg:hidden flex-grow"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Mobile Navigation (only shown on mobile) -->
+      <div
+        class="mobile-nav-bar flex lg:hidden justify-around py-2 bg-gray-100 w-full border-t border-gray-300 h-[60px] shrink-0"
+      >
+        <button
+          onclick="W.system.showSection('player')"
+          class="W-button flex items-center justify-center"
+        >
+          <i class="fas fa-circle-play text-2xl"></i>
+        </button>
+        <button
+          onclick="W.system.showSection('queue-div-frame')"
+          class="W-button flex items-center justify-center"
+        >
+          <i class="fas fa-list text-xl"></i>
+        </button>
+        <button
+          onclick="W.system.showSection('queue-selecter-top')"
+          class="W-button flex items-center justify-center"
+        >
+          <i class="fas fa-network-wired text-xl"></i>
+        </button>
+        <button
+          onclick="W.search_top.show()"
+          class="W-button flex items-center justify-center"
+        >
+          <i class="fas fa-magnifying-glass text-2xl"></i>
+        </button>
+        <button
+          onclick="W.queue.systemMenu.show(event)"
+          class="queue-system-menu W-button flex items-center justify-center"
+        >
+          <i class="fas fa-gear text-2xl"></i>
+        </button>
+      </div>
+    </div>
+    <!--Search-->
+    <!-- Search Overlay -->
+    <div
+      id="search"
+      class="absolute top-0 bottom-0 left-0 right-0 bg-white lg:bg-gray-200 lg:bg-opacity-90 hidden flex-col items-stretch"
+    >
+      <!-- Search Top Section -->
+      <div
+        id="search-top"
+        class="search flex-none flex flex-col items-start mr-2 lg:mr-6 overflow-auto"
+      >
+        <!-- Search Buttons -->
+        <div
+          id="search-buttons"
+          class="w-full flex flex-row items-start pl-2 lg:pl-8 pt-2 bg-white lg:bg-transparent bg-opacity-100"
+        >
+          <!-- Back Button -->
+          <span
+            id="search-escape"
+            class="search-button W-button flex flex-grow-0 lg:h-9"
+          >
+            <span class="m-auto">Back</span>
+          </span>
+          <!-- Progress Indicator -->
+          <img
+            id="search-progress"
+            class="pt-3.75 pl-8 flex-grow-0"
+            src="icons/turning_circle.gif"
+          />
+          <!-- Spacer -->
+          <span class="flex-grow"></span>
+          <!-- Search Database -->
+          <span
+            id="search-database"
+            class="search-button W-button flex flex-grow-0 lg:h-9"
+          >
+            <span class="m-auto">Database</span>
+          </span>
+          <!-- Search Spotify -->
+          <span
+            id="search-spotify"
+            class="search-button W-button flex flex-grow-0 lg:h-9"
+          >
+            <span class="m-auto">Spotify</span>
+          </span>
+          <!-- Close Button -->
+          <span
+            id="search-close"
+            class="hidden lg:block h-9 w-9 border border-gray-300 ml-1 bg-[url('icons/search_close_icon.png')] hover:bg-gray-300"
+          >
+          </span>
+        </div>
+        <!-- Search Input -->
+        <input
+          id="search-text"
+          class="lg:h-[55px] lg:w-[calc(97vw-30px)] ml-3 lg:ml-8 lg:pr-0 mb-3 overflow-hidden bg-transparent !border-2 border-gray-300 lg:outline-none lg:border-none lg:text-[3em] lg:uppercase"
+        />
+      </div>
+      <!-- Search Container -->
+      <div
+        id="search-container"
+        class="flex-auto overflow-hidden flex flex-col flex-nowrap items-stretch"
+        data-select-multiple="false"
+      >
+        <!-- Search Subcontainer One -->
+        <div
+          id="search-subcontainer-one"
+          class="search-subcontainer flex-auto flex flex-col overflow-hidden pl-2 lg:pl-8"
+        >
+          <!-- Search Catergories -->
+          <div
+            id="search-categories"
+            class="flex flex-wrap lg:min-h-[50px] mr-3 lg:mr-6 mb-6 justify-start gap-2 lg:gap-0 lg:justify-between bg-white lg:bg-gray-200 bg-opacity-100"
+          >
+            <!-- Artists -->
+            <span
+              id="search-category-artists"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">Artists</span>
+            </span>
+            <!-- Albums -->
+            <span
+              id="search-category-albums"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">Albums</span>
+            </span>
+            <!-- Tracks -->
+            <span
+              id="search-category-tracks"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">Tracks</span>
+            </span>
+            <!-- Database Playlists -->
+            <span
+              id="search-category-database-playlists"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">Playlists</span>
+            </span>
+            <!-- Playlists -->
+            <span
+              id="search-category-playlists"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">Playlists</span>
+            </span>
+            <!-- My Playlists -->
+            <span
+              id="search-category-my-playlists"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">My Playlists</span>
+            </span>
+            <!-- My Albums -->
+            <span
+              id="search-category-my-albums"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">My Albums</span>
+            </span>
+            <!-- My Tracks -->
+            <span
+              id="search-category-my-tracks"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">My Tracks</span>
+            </span>
+            <!-- Recently Added -->
+            <span
+              id="search-category-recently-added"
+              class="W-button search-category text-nowrap lg:flex lg:flex-1 lg:uppercase"
+            >
+              <span class="m-auto">Recently Added</span>
+            </span>
+          </div>
+          <!-- Search Results UL -->
+          <ul
+            class="search-resultsUL search-results grid gap-4 grid-cols-15 items-start content-start h-auto list-none overflow-y-auto overflow-x-hidden pl-1 mr-3"
+          >
+            <!-- Search Results LI -->
+            <li
+              class="search-results-li flex flex-col relative max-w-[160px] mr-4 lg:mr-10 mb-5 cursor-pointer"
+            >
+              <!-- Image SPAN -->
+              <span class="flex h-[150px] w-[150px] bg-white leading-[18px]">
+                <img
+                  class="block max-h-[150px] max-w-[150px] h-auto w-auto m-auto"
+                  src=""
+                />
+              </span>
+              <!-- Text SPAN -->
+              <span class="hyphens-auto w-[150px] leading-[18px]"> </span>
+            </li>
+            <!--  Search Results Track LI -->
+            <li
+              class="search-results-track-li flex flex-col relative max-w-[160px] mr-4 lg:mr-10 mb-5 cursor-pointer"
+            >
+              <!-- Image SPAN -->
+              <span class="flex h-[150px] w-[150px] bg-white leading-[18px]">
+                <img
+                  class="block max-h-[150px] max-w-[150px] h-auto w-auto m-auto"
+                  src=""
+                />
+              </span>
+              <!-- Upper Text SPAN -->
+              <span class="hyphens-auto font-bold w-[150px] leading-[18px]">
+              </span>
+              <!-- Lower Text SPAN -->
+              <span class="hyphens-auto w-[150px] leading-[18px]"> </span>
+            </li>
+          </ul>
+        </div>
+        <!-- Search Subcontainer Two -->
+        <div
+          id="search-subcontainer-two"
+          class="search-subcontainer flex flex-col lg:flex-row overflow-hidden h-full pl-3"
+        >
+          <!-- Artist Details -->
+          <div
+            id="search-artist-details"
+            class="relative grid grid-cols-[auto_1fr] lg:grid-cols-1 grid-rows-[auto_1fr] lg:grid-rows-[auto_auto_auto_auto_1fr] lg:flex-1 lg:h-[calc(100%-1em)] justify-start items-start mr-3 py-4 lg:py-0 border-y-2 lg:border-y-0 border-gray-300 overflow-auto"
+          >
+            <span
+              id="search-artist-details-image"
+              class="flex col-start-1 row-start-1 row-span-2 items-center justify-center h-[150px] lg:h-[21vw] lg:w-[21vw] bg-white m-auto"
+            >
+              <img class="w-full h-full object-contain cursor-pointer" src="" />
+            </span>
+            <span
+              id="search-artist-details-name"
+              class="col-start-2 lg:col-start-1 row-start-1 lg:row-start-3 pt-2 pb-2 text-lg lg:text-[1.5em] lg:text-center ml-10 lg:ml-0"
+            >
+            </span>
+            <span
+              id="search-artist-details-buttons"
+              class="col-start-2 lg:col-start-1 row-start-2 lg:row-start-4 flex flex-col justify-start lg:items-center ml-10 lg:ml-0"
+            >
+              <span
+                id="search-artist-details-button-albums"
+                class="W-button w-[7em] ml-0 lg:ml-0 mt-1.5 text-center"
+                >Albums</span
+              >
+              <span
+                id="search-artist-details-button-related"
+                class="W-button w-[7em] ml-0 mt-1.5 text-center"
+                >Related Artists</span
+              >
+              <span
+                id="search-artist-details-button-biography"
+                class="W-button w-[7em] ml-0 mt-1.5 text-center"
+                >Wikipedia</span
+              >
+              <span
+                id="search-artist-details-button-playlists"
+                class="W-button w-[7em] ml-0 mt-1.5 text-center"
+                >Playlists</span
+              >
+            </span>
+          </div>
+          <!-- Artist Right -->
+          <div
+            id="search-artist-right"
+            class="flex-1 min-h-0 lg:flex-[3] mt-4 lg:mt-0 lg:h-[calc(100%-2em)]"
+          >
+            <ul
+              id="search-artist-right-subcontainer-one"
+              class="search-resultsUL search-results grid gap-4 grid-cols-15 items-start content-start h-full list-none overflow-y-auto pl-0"
+            ></ul>
+            <div
+              id="search-artist-right-subcontainer-two"
+              class="flex flex-row h-full"
+            >
+              <div
+                id="search-artist-album-details"
+                class="relative flex-1 h-full"
+              >
+                <div
+                  id="search-artist-album-details-subcontainer-one"
+                  class="flex flex-col h-full mr-4 lg:mr-0 overflow-auto"
+                >
+                  <span
+                    id="search-artist-album-details-image"
+                    class="flex lg:h-[15vw] lg:w-[15vw] bg-white"
+                  >
+                    <img
+                      class="w-full h-full object-contain cursor-pointer"
+                      src=""
+                    />
+                  </span>
+                  <span
+                    id="search-artist-album-details-name"
+                    class="hyphens-auto pt-2 pb-2 max-h-[108px] max-w-40 lg:max-w-none lg:w-[15vw] text-[1em] text-center overflow-hidden"
+                  >
+                  </span>
+                  <span
+                    id="search-artist-album-details-buttons"
+                    class="flex flex-col justify-start items-center lg:w-[15vw]"
+                  >
+                    <span
+                      id="search-artist-album-details-button-play"
+                      class="W-button w-[6em] lg:w-[7em] ml-0 mt-1 lg:mt-1.5 p-0 lg:p-1 text-center"
+                      >Play</span
+                    >
+                    <span
+                      id="search-artist-album-details-button-add"
+                      class="W-button w-[6em] lg:w-[7em] ml-0 mt-1 lg:mt-1.5 p-0 lg:p-1 text-center"
+                      >Add</span
+                    >
+                    <span
+                      id="search-artist-album-details-button-replace"
+                      class="W-button w-[6em] lg:w-[7em] ml-0 mt-1 lg:mt-1.5 p-0 lg:p-1 text-center"
+                      >Replace</span
+                    >
+                    <span
+                      id="search-artist-album-details-button-edit"
+                      class="W-button w-[6em] lg:w-[7em] ml-0 mt-1 lg:mt-1.5 p-0 lg:p-1 text-center"
+                      >Edit / Select</span
+                    >
+                    <span
+                      id="search-artist-album-details-button-more"
+                      class="W-button w-[6em] lg:w-[7em] ml-0 mt-1 lg:mt-1.5 p-0 lg:p-1 text-center"
+                      >More</span
+                    >
+                  </span>
+                </div>
+                <div id="search-artist-album-details-subcontainer-two"></div>
+              </div>
+              <div
+                id="search-artist-right-results"
+                class="flex-[2] lg:flex-[3] h-full"
+              >
+                <ul
+                  class="search-resultsUL search-results-list h-full list-none overflow-auto pl-0"
+                >
+                  <li
+                    class="search-artist-album-track flex flex-row justify-start items-center w-[95%] border-t first:border-t-0 border-gray-300 cursor-pointer hover:bg-gray-300"
+                  >
+                    <div class="group flex flex-row items-center flex-1">
+                      <span
+                        class="search-track-number self-start h-6 w-6 group-hover:bg-[url('icons/play_white.png')] group-hover:text-[0] bg-[position:-5px_0]"
+                      >
+                        1
+                      </span>
+                      <span class="search-track-title flex-1"></span>
+                    </div>
+                    <svg
+                      class="search-track-menu lg:hidden w-6 h-6"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <circle cx="12" cy="6" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="18" r="1.5"></circle>
+                    </svg>
+                  </li>
+                  <li
+                    class="search-various-album-track flex flex-row justify-start items-start lg:items-center w-[95%] border-t first:border-t-0 border-gray-300 cursor-pointer hover:bg-gray-300"
+                  >
+                    <div
+                      class="group flex flex-row items-start lg:items-center flex-1"
+                    >
+                      <span class="search-track-number h-6 w-6"></span>
+                      <div
+                        class="w-full flex flex-col lg:flex-row items-start mt-1 lg:mt-0"
+                      >
+                        <span
+                          class="search-track-artist text-album flex-1 mb-2 lg:m-0 order-2 lg:order-1"
+                        ></span>
+                        <span
+                          class="search-track-title text-track flex-1 mb-2 lg:m-0 order-1 lg:order-2 leading-tight lg:leading-normal"
+                        ></span>
+                      </div>
+                    </div>
+                    <svg
+                      class="search-track-menu lg:hidden w-6 h-6 mt-1"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <circle cx="12" cy="6" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="18" r="1.5"></circle>
+                    </svg>
+                  </li>
+                  <li
+                    class="search-artist-top-track flex flex-row justify-start items-center w-[95%] border-t first:border-t-0 border-gray-300 cursor-pointer hover:bg-gray-300"
+                  >
+                    <span class="min-h-[48px] flex w-12 bg-white self-start">
+                      <img
+                        class="block max-h-12 max-w-12 h-auto w-auto m-auto"
+                        src=""
+                      />
+                    </span>
+                    <div class="w-full flex flex-col lg:flex-row items-start">
+                      <span
+                        class="search-track-album text-album flex-1 lg:min-h-[48px] pl-1 mb-2 lg:m-0 order-2 lg:order-1"
+                      ></span>
+                      <span
+                        class="search-track-title text-track flex-1 lg:min-h-[48px] pl-1 mb-2 lg:m-0 order-1 lg:order-2 leading-tight lg:leading-normal"
+                      ></span>
+                    </div>
+                    <svg
+                      class="search-track-menu lg:hidden w-6 h-6 mt-1"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <circle cx="12" cy="6" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="18" r="1.5"></circle>
+                    </svg>
+                  </li>
+                  <li
+                    class="search-artist-recommendations-track flex flex-row justify-start items-center w-[95%] border-t first:border-t-0 border-gray-300 cursor-pointer hover:bg-gray-300"
+                  >
+                    <span
+                      class="search-track-image min-h-[48px] flex w-12 bg-white self-start"
+                    >
+                      <img
+                        class="block max-h-12 max-w-12 h-auto w-auto m-auto"
+                        src=""
+                      />
+                    </span>
+                    <div class="w-full flex flex-col lg:flex-row">
+                      <span
+                        class="search-track-artist text-artist flex-[2] lg:min-h-[48px] leading-none lg:leading-6 pl-1 mb-2 lg:m-0 order-2 lg:order-1"
+                      ></span>
+                      <span
+                        class="search-track-album text-album flex-[3] lg:min-h-[48px] leading-none lg:leading-6 pl-1 mb-2 lg:m-0 order-3 lg:order-2"
+                      ></span>
+                      <span
+                        class="search-track-title text-track flex-[3] lg:min-h-[48px] leading-none lg:leading-6 pl-1 mb-2 lg:m-0 order-1 lg:order-3"
+                      ></span>
+                    </div>
+                    <svg
+                      class="search-track-menu lg:hidden w-6 h-6 mt-1"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <circle cx="12" cy="6" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="18" r="1.5"></circle>
+                    </svg>
+                  </li>
+                  <li class="search-blank-track flex w-[95%] h-8"></li>
+                </ul>
+              </div>
+            </div>
+            <!-- Artist Right Subcontainer Three -->
+            <div
+              id="search-artist-right-subcontainer-three"
+              class="w-[calc(100%-1em)] h-full overflow-auto flex flex-col items-start"
+            >
+              <!-- Artist Right Disambiguation -->
+              <span
+                id="search-artist-right-disambiguation"
+                class="search-link W-button ml-0 flex-grow-0"
+              >
+                Disambiguation
+              </span>
+              <div class="search-resultsUL pl-0 mt-4"></div>
+            </div>
+            <!-- Artist Right Subcontainer Four -->
+            <div
+              id="search-artist-right-subcontainer-four"
+              class="w-[calc(100%-1em)] h-full overflow-auto flex flex-col items-start"
+            >
+              <!-- Artist Right Disambiguation Back -->
+              <span
+                id="search-artist-right-disambiguation-back"
+                class="search-link W-button ml-0 flex-grow-0"
+              >
+                Back
+              </span>
+              <ul class="search-resultsUL pl-0 mt-4">
+                <li class="mb-4">
+                  <span
+                    class="search-link text-blue-600 underline cursor-pointer"
+                  >
+                  </span>
+                  <span></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--Import-->
+    <div
+      id="import-container"
+      class="import hidden opacity-100 absolute top-0 bottom-0 left-0 right-0 bg-white flex-col lg:flex-row lg:items-stretch"
+    >
+      <span
+        class="lg:hidden pl-5 py-3 bg-gray-100 border-b-2 border-b-gray-200 font-bold"
+        >Import: Directories & Files</span
+      >
+      <span
+        id="import-close"
+        class="hidden lg:block absolute top-0 right-0 m-[10px] h-[36px] w-[36px] z-[99] hover:bg-gray-300"
+        style="background-image: url(&quot;icons/search_close_icon.png&quot;)"
+      ></span>
+      <div
+        id="import-left"
+        class="flex-1 pt-[10px] pl-[10px] pr-[24px] flex flex-col max-h-[60%] lg:max-h-none items-stretch"
+      >
+        <div
+          id="import-buttons-left"
+          class="w-full mt-0 lg:mt-[12px] pl-[6px] flex flex-wrap items-center justify-between"
+        >
+          <div class="input-buttons flex pt-[3px] pb-4 lg:pb-0">
+            <span id="import-home-directory" class="W-button">Home</span>
+            <span id="import-downloads-directory" class="W-button"
+              >Downloads</span
+            >
+            <span id="import-search-directory" class="W-button"
+              >Music Search</span
+            >
+          </div>
+          <div class="spacer flex-grow"></div>
+          <input
+            id="import-input"
+            class="ml-1 lg:ml-0 p-[5px] outline outline-1 outline-black rounded-md w-[90%] lg:w-[calc(28ch)]"
+            placeholder="Type to narrow directory listing"
+          />
+        </div>
+        <div id="import-heading-left" class="pt-4 lg:pt-[20px] pl-[10px]">
+          Please select directories or files to be added to Pending.
+        </div>
+        <div
+          id="import-directory-name"
+          class="pt-[12px] pl-[10px] flex justify-start items-center flex-wrap w-full"
+        >
+          <span
+            class="import-cwd-element px-[1px] pt-[4px] pb-[4px] whitespace-nowrap leading-none cursor-pointer underline inline-block hover:bg-gray-300"
+            >Parent Directory</span
+          >
+          <span
+            class="import-sep-element px-[1px] pt-[4px] pb-[4px] whitespace-nowrap leading-none cursor-pointer underline inline-block hover:bg-gray-300"
+            >/</span
+          >
+          <span
+            class="import-cwd-selection-element group px-[1px] whitespace-nowrap leading-none inline-flex items-center flex-1 hover:bg-gray-300"
+          >
+            <span
+              class="import-cwd-last-element px-[1px] pt-[4px] pb-[4px] whitespace-nowrap leading-none cursor-pointer underline inline-block"
+              >Directory</span
+            >
+            <span
+              class="import-cwd-colon px-[1px] whitespace-nowrap leading-none flex pr-[4px] align-middle no-underline flex-1"
+              >:</span
+            >
+            <span class="import-cwd-icon px-2">
+              <i class="fas fa-plus text-sm cursor-pointer"></i>
+            </span>
+          </span>
+        </div>
+        <ul
+          id="import-directory-listing"
+          class="mt-[12px] mb-[24px] pl-[10px] mr-2 text-[0] overflow-auto"
+          tabindex="0"
+        >
+          <li
+            class="group flex flex-row items-center h-[30px] w-full pt-[2px] pb-[2px] border-b border-gray-300 hover:bg-gray-300"
+          >
+            <span
+              class="f1 flex-1 whitespace-nowrap overflow-hidden text-[16px] leading-[24px]"
+            ></span>
+            <span class="f2 py-2 px-4 cursor-pointer">
+              <i class="fas fa-plus text-sm cursor-pointer"></i>
+            </span>
+          </li>
+        </ul>
+      </div>
+      <div
+        id="import-resizer"
+        class="block lg:hidden cursor-row-resize h-[6px] w-full bg-gray-300 bg-[repeating-linear-gradient(90deg,_#aaa_0px,_#aaa_1px,_transparent_1px,_transparent_3px)] rounded"
+      ></div>
+      <div
+        id="import-right"
+        class="flex-1 pt-[10px] pl-4 lg:pl-0 overflow-hidden"
+      >
+        <div
+          id="import-buttons-right"
+          class="w-full mt-[12px] flex items-center justify-start"
+        >
+          <span id="import-import" class="W-button">Add to Pending</span>
+          <span id="import-goto-quarantine" class="W-button"
+            >Go to Pending</span
+          >
+          <span id="import-clear-quarantine" class="W-button"
+            >Clear Pending</span
+          >
+        </div>
+        <div id="import-heading-right" class="mt-[20px] pl-[4px] inline-block">
+          Items to be added to Pending:
+        </div>
+        <ul
+          id="import-selected"
+          class="mt-[20px] ml-[6px] mr-[40px] pt-[10px] pb-[10px] min-h-[48px] max-h-40 lg:max-h-none text-[0] border border-gray-500 overflow-y-auto"
+        >
+          <li
+            class="import-selected-li group h-[24px] w-[calc(100%-16px)] mx-auto pt-[2px] pb-[2px] flex items-center hover:bg-gray-300 cursor-pointer"
+          >
+            <span
+              class="f1 flex flex-1 whitespace-nowrap overflow-hidden text-[15px]"
+            ></span>
+            <span class="f2 flex py-2 px-3">
+              <i class="fas fa-times text-sm cursor-pointer"></i>
+            </span>
+          </li>
+          <li
+            class="import-selected-li-placeholder h-[24px] w-[calc(100%-16px)] mx-auto pt-[2px] pb-[2px] flex items-center text-[15px] leading-[24px] text-gray-400"
+          >
+            Selected directories and files will appear here.
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div
+      id="import-tooltip"
+      class="hidden absolute z-[99] px-[15px] py-[5px] ml-[12px] bg-gray-300 border border-black rounded-[5px] w-[90vw] max-w-[300px] left-[5vw] top-auto lg:w-[25%] lg:left-auto lg:top-1/2 lg:ml-[12px]"
+    >
+      <!-- MOBILE: Downward arrow -->
+      <div
+        class="tooltip-arrow-outer-mobile absolute bottom-[-8px] left-[20px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-black lg:hidden"
+      ></div>
+      <div
+        class="tooltip-arrow-inner-mobile absolute bottom-[-7px] left-[20px] w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[7px] border-t-gray-300 lg:hidden"
+      ></div>
+
+      <!-- DESKTOP: Side arrow -->
+      <div
+        class="tooltip-arrow-outer absolute top-1/2 left-full w-0 h-0 -mt-[8px] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-l-[8px] border-l-black hidden lg:block"
+      ></div>
+      <div
+        class="tooltip-arrow-inner absolute top-1/2 left-full w-0 h-0 -mt-[7px] border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-l-[7px] border-l-gray-300 hidden lg:block"
+      ></div>
+      <div id="tooltip-content" class="break-words"></div>
+    </div>
+    <!-- <div
+      id="import-tooltip"
+      class="hidden absolute ml-[12px] bg-gray-300 border border-black rounded-[5px] px-[15px] py-[5px] w-[25%] z-[99]"
+    >
+      <div
+        class="tooltip-arrow-outer absolute top-1/2 left-full w-0 h-0 -mt-[8px] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-l-[8px] border-l-black text-[0] leading-none"
+      ></div>
+      <div
+        class="tooltip-arrow-inner absolute top-1/2 left-full w-0 h-0 -mt-[7px] border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-l-[7px] border-l-gray-300 text-[0] leading-none"
+      ></div>
+      <div id="tooltip-content" class="break-words"></div>
+    </div> -->
+    <!--Quarantine-->
+    <div
+      id="quarantine-container"
+      class="quarantine opacity-100 hidden absolute top-0 bottom-0 left-0 right-0 bg-white flex-col"
+    >
+      <span
+        class="lg:hidden pl-5 py-3 bg-gray-100 border-b-2 border-b-gray-200 font-bold"
+        >Pending</span
+      >
+      <span
+        id="quarantine-close"
+        class="hidden lg:block absolute top-0 right-0 m-[10px] h-[36px] w-[36px] z-[99] hover:bg-gray-300"
+        style="background-image: url(&quot;icons/search_close_icon.png&quot;)"
+      ></span>
+      <div id="quarantine-heading" class="mt-3 ml-3 flex flex-wrap gap-1">
+        <span id="quarantine-directories" class="W-button"
+          >Back to Directories</span
+        >
+        <span id="quarantine-clear" class="W-button">Clear Pending</span>
+        <span id="quarantine-duplicates" class="W-button">Deduplicate</span>
+        <span id="quarantine-delete" class="W-button">Clear Selected</span>
+      </div>
+      <ul
+        id="quarantine-paginator"
+        class="ml-4 mt-4 mb-4 flex items-center"
+      ></ul>
+      <ul
+        id="quarantine-listing"
+        class="pt-2 pl-0 m-0 ml-[18px] mr-4 lg:mr-0 mb-4 lg:mb-0 lg:w-[80%] lg:min-w-[37em] flex-1 text-[0] overflow-auto"
+      >
+        <li class="cursor-pointer border-t border-gray-300 first:border-t-0">
+          <div class="flex items-center">
+            <span
+              class="f1 flex-grow flex-shrink-0 basis-[calc(50%-32px)] pt-[3px] pb-[3px] overflow-hidden text-[16px] mr-[8px]"
+            ></span>
+            <span
+              class="f2 flex-grow flex-shrink-0 basis-[calc(50%-32px)] pt-[3px] pb-[3px] overflow-hidden text-[16px] mr-[8px]"
+            ></span>
+            <span
+              class="f3 flex-grow-0 flex-shrink-0 basis-[24px] h-[24px] p-0 bg-no-repeat bg-[url('icons/pencil.png')] hover:bg-gray-350"
+            ></span>
+            <span
+              class="f4 flex-grow-0 flex-shrink-0 basis-[24px] h-[24px] p-0 bg-no-repeat bg-[url('icons/black_x.png')] hover:bg-gray-350"
+            ></span>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <!--QEdit-->
+    <div
+      id="qedit-container"
+      class="qedit opacity-100 hidden absolute top-0 bottom-0 left-0 right-0 bg-white flex-col"
+    >
+      <span
+        class="lg:hidden pl-5 py-3 bg-gray-100 border-b-2 border-b-gray-200 font-bold"
+        >Pending: Edit Album</span
+      >
+      <span
+        id="qedit-close"
+        class="hidden lg:block absolute top-0 right-0 m-[10px] h-[36px] w-[36px] z-[99] hover:bg-gray-300"
+        style="background-image: url(&quot;icons/search_close_icon.png&quot;)"
+      ></span>
+      <div
+        id="qedit-heading"
+        class="mt-[12px] ml-[10px] mb-4 leading-[32px] flex flex-wrap items-center"
+      >
+        <span id="qedit-directories" class="W-button my-1 lg:my-0"
+          >Directories</span
+        >
+        <span id="qedit-quarantine" class="W-button">Pending</span>
+        <span id="qedit-open" class="W-button">Open Text File</span>
+        <span id="qedit-unlist" class="W-button">Clear Selected Songs</span>
+        <span id="qedit-strip" class="W-button">Strip Numbers</span>
+        <span id="qedit-update" class="W-button">Commit Changes</span>
+        <span id="qedit-import" class="W-button">Import to Database</span>
+        <span class="w-full flex-grow"></span>
+        <span id="qedit-striptxt" class="W-button my-1">Strip Text</span>
+        <input
+          id="qedit-txtinput"
+          class="ml-2 h-[calc(2ch+8px)] outline outline-1 outline-black rounded-md p-[4px]"
+        />
+      </div>
+      <ul
+        id="qedit-artist-album"
+        class="qedit-listing pl-0 w-[95%] lg:w-[80%] min-w-[37em] text-[0] m-0 ml-[14px]"
+      >
+        <li>
+          <div
+            class="border-t border-gray-300 leading-[24px] h-[30px] bg-gray-200"
+          >
+            <span
+              class="f1 inline-block w-[48px] mr-[8px] text-[16px] font-bold pt-[3px] pb-[3px] overflow-hidden"
+            ></span>
+            <span
+              class="f2 inline-block w-[calc(100%-92px)] mr-[8px] text-[16px] pt-[3px] pb-[3px] overflow-hidden"
+            >
+              <input
+                class="w-[calc(100%-4px)] h-[18px] outline-none border-none font-normal text-[16px]"
+            /></span>
+            <span class="f3"></span>
+          </div>
+        </li>
+      </ul>
+      <ul
+        id="qedit-listing"
+        class="qedit-listing pl-0 h-[calc(100%-160px)] w-[95%] lg:w-[80%] min-w-[37em] text-[0] m-0 ml-[14px] overflow-auto"
+      >
+        <li class="cursor-pointer">
+          <div
+            class="border-t border-gray-300 leading-[24px] h-[30px] bg-gray-200"
+          >
+            <span
+              class="f1 inline-block w-[48px] mr-[8px] text-[16px] pt-[3px] pb-[3px] overflow-hidden"
+            ></span>
+            <span
+              class="f2 inline-block w-[calc(100%-92px)] mr-[8px] text-[16px] pt-[3px] pb-[3px] overflow-hidden"
+            >
+              <input
+                class="w-[calc(100%-4px)] h-[18px] outline-none border-none font-normal text-[16px]"
+            /></span>
+            <span
+              class="f3 inline-block w-[24px] h-[30px] bg-center bg-no-repeat bg-[url('icons/black_x.png')] hover:bg-gray-300"
+            ></span>
+          </div>
+        </li>
+        <li class="cursor-default border-t border-gray-300 py-3">
+          <div class="bg-white flex items-center">
+            <span class="f1 inline-block w-[48px] mr-[8px]"></span>
+            <span class="f2 inline-block w-[calc(100%-92px)] mr-[8px]"></span>
+            <span class="f3 inline-block w-[24px]"></span>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <!--Logs-->
+    <div
+      id="logs-container"
+      class="logs hidden opacity-100 absolute top-0 bottom-0 left-0 right-0 bg-white flex-col"
+    >
+      <!-- Close Button -->
+      <span
+        id="logs-close"
+        class="hidden lg:block absolute top-0 right-0 m-[10px] h-[36px] w-[36px] z-[99] hover:bg-gray-300"
+        style="
+          background-image: url(&quot;icons/search_close_icon.png&quot;);
+          background-size: cover;
+        "
+      ></span>
+
+      <!-- Heading -->
+      <span
+        id="logs-heading"
+        class="pl-5 py-3 bg-gray-100 lg:bg-white border-b-2 lg:border-none border-b-gray-200 font-bold"
+        >Logging</span
+      >
+
+      <!-- Buttons -->
+      <div id="logs-buttons" class="flex gap-1 pl-5 mt-2">
+        <button data-source="all" class="W-button ml-0">All Logs</button>
+        <button data-source="logging" class="W-button">Main Process</button>
+        <button data-source="subprocess" class="W-button">Subprocesses</button>
+        <button data-source="stderr" class="W-button">Stderr</button>
+      </div>
+      <!-- Paginator -->
+      <ul id="logs-paginator" class="flex items-center pl-5 mt-6 mb-0"></ul>
+      <!-- Logs -->
+      <ul
+        id="logs"
+        class="mt-4 flex flex-col space-y-2 h-full w-full mb-5 px-5 overflow-y-auto"
+      >
+        <li
+          class="log-entry grid grid-cols-[172px_82px_auto] grid-rows-[min-content_min-content] lg:grid-cols-[180px_85px_150px_auto] lg:grid-rows-1 border-b border-gray-300 py-2"
+          data-source="undefined"
+        >
+          <span class="timestamp bg-gray-200 lg:bg-white text-sm lg:text-base"
+            >[12:34:56]</span
+          >
+          <span class="level bg-gray-200 lg:bg-white text-sm lg:text-base"
+            >ERROR</span
+          >
+          <span class="name bg-gray-200 lg:bg-white text-sm lg:text-base"
+            >ModuleName</span
+          >
+          <span class="message col-span-3 lg:col-span-1 w-full"
+            >An error occurred</span
+          >
+        </li>
+      </ul>
+    </div>
+    <!--Shield to hide drag cursor-->
+    <div
+      id="shield"
+      class="absolute -z-10 bg-white top-0 right-0 w-full h-full"
+    ></div>
+    <!--W-util-input-->
+    <input
+      id="W-util-input"
+      class="border-2 border-black pl-1 my-2.5"
+      style="border-style: inset"
+    />
+    <!--Button-->
+    <!-- These elements are removed from document.body and used only
+		for cloning.
+
+		Please note that the <input> element gets deleted when the cloned
+		button is renamed, so we have to recreate it in javascript. Any
+		inline styling of the <input> element below would be lost.
+
+		We add an outer div with an id, to make sure we don't clone the wrong
+		W-button span. This outer div isn't cloned. It's used only to locate
+		the W-button span it contains, after which it is removed from
+		document.body and will be garbage collected. -->
+    <div id="W-button-for-cloning">
+      <span class="W-button">Test<input /></span>
+    </div>
+    <!--Menus-->
+    <!-- These elements are removed from document.body and used only
+		for cloning -->
+    <div
+      class="W-menu-frame hidden absolute transition-transform duration-200 select-none"
+    >
+      <div
+        class="W-menu-innerframe relative flex flex-col bg-white border-solid border border-gray-300 max-h-[55vh] lg:max-h-[65vh] w-60 shadow-lg"
+      >
+        <!-- Menu bar - mobile only -->
+        <div
+          class="W-menu-bar lg:hidden border-y border-y-gray-300 -mt-px relative bg-gray-300 flex items-center justify-between h-10"
+        >
+          <!-- Dragbar -->
+          <span
+            class="W-menu-dragbar h-10 bg-gray-300 flex-grow cursor-grab"
+          ></span>
+          <!-- Close Icon (Font Awesome) -->
+          <i
+            class="W-menu-close fas fa-xmark text-xl py-3 px-3 cursor-pointer"
+          ></i>
+        </div>
+        <div
+          class="W-menu-container flex flex-col flex-grow overflow-y-auto overflow-x-hidden"
+        >
+          <div
+            class="W-menu-row border-y-solid border-y border-y-gray-300 -mt-px leading-6 py-2 lg:py-1 pl-1.5 pr-4 relative cursor-pointer hover:bg-gray-300"
+          ></div>
+          <div
+            class="W-menu-row-parent border-y-solid border-y border-y-gray-300 -mt-px leading-6 py-2 lg:py-1 pl-1.5 pr-4 relative cursor-pointer hover:bg-gray-300 after:content-[url('icons/right.png')] after:absolute after:mr-1.5 after:right-0 after:top-1/4"
+          ></div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="W-submenu-frame hidden absolute flex-col bg-white border-solid border border-gray-300 max-h-[55vh] lg:max-h-[65vh] w-60 shadow-lg overflow-hidden select-none"
+    >
+      <!-- Submenu bar - mobile only -->
+      <div
+        class="W-submenu-bar lg:hidden border-y border-y-gray-300 -mt-px relative bg-gray-300 flex items-center justify-between h-10"
+      >
+        <!-- Back Arrow Icon (Font Awesome) -->
+        <i
+          class="W-submenu-back fas fa-chevron-left text-lg py-3 px-3 cursor-pointer"
+        ></i>
+        <!-- Dragbar -->
+        <span
+          class="W-submenu-dragbar h-10 bg-gray-300 flex-grow cursor-grab"
+        ></span>
+        <!-- Close Icon (Font Awesome) -->
+        <i
+          class="W-submenu-close fas fa-xmark text-xl py-3 px-3 cursor-pointer"
+        ></i>
+      </div>
+      <div
+        class="W-submenu-title block lg:hidden font-bold border-y-solid border-y border-y-gray-300 -mt-px leading-6 py-2 lg:py-1 pl-1.5 pr-4 relative cursor-pointer hover:bg-gray-300"
+      ></div>
+      <div
+        class="W-submenu-container flex flex-col pb-1 lg:pb-0 overflow-y-auto"
+      >
+        <div
+          class="W-submenu-row border-y-solid border-y border-y-gray-300 last:border-b-0 -mt-px leading-6 py-2 lg:py-1 pl-1.5 pr-4 relative cursor-pointer hover:bg-gray-300"
+        ></div>
+        <div
+          class="W-submenu-row-parent border-y-solid border-y border-y-gray-300 last:border-b-0 -mt-px leading-6 py-2 lg:py-1 pl-1.5 pr-4 relative cursor-pointer hover:bg-gray-300 after:content-[url('icons/right.png')] after:absolute after:mr-1.5 after:right-0 after:top-1/4"
+        ></div>
+      </div>
+    </div>
+    <!--Popups-->
+    <!-- These elements are removed from document.body and used only 
+		for cloning -->
+    <div
+      class="W-popup hidden absolute top-[100px] left-[calc(50%-150px)] h-[400px] w-[300px] bg-white border border-black z-[101]"
+    >
+      <div
+        class="W-popup-bar absolute top-0 right-0 w-full h-6 pl-1.5 leading-6 text-white font-semibold bg-gray-500 box-border cursor-grab"
+      ></div>
+      <i
+        class="W-popup-close cursor-pointer absolute top-0 right-0 z-[102] fas fa-xmark text-lg text-white pr-2 pt-1"
+      ></i>
+      <div
+        class="W-popup-content absolute whitespace-nowrap leading-[140%] top-[25px] left-0 p-3"
+      ></div>
+    </div>
+    <div
+      class="W-modal-shield hidden absolute top-0 left-0 w-full h-full z-[100] bg-gray-500 opacity-70"
+    ></div>
+    <!-- Each of the outer divs below will be set to be a child of a
+		W-popup-content div, but not all W-popup-content divs have the
+		same children, so we show them here as children of document.body -->
+    <!-- directory -->
+    <div
+      class="W-popup-directory inline-block overflow-auto max-h-[400px] max-w-[85vw] min-w-[350px]"
+    >
+      <span class="W-popup-directory-span break-all whitespace-normal">
+        <a class="W-popup-directory-dir cursor-pointer"></a>
+      </span>
+      <a class="W-popup-directory-list-item-link cursor-pointer"></a>
+      <span class="W-popup-directory-list-item"></span>
+    </div>
+    <!-- processing -->
+    <div class="W-popup-progress fountainG-frame"></div>
+    <div class="W-popup-processing fountainG-frame">
+      <div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+        <div class="fountainG"></div>
+      </div>
+    </div>
+    <!-- options -->
+    <div class="W-popup-options inline-block">
+      <div class="W-popup-options-title font-bold mb-1.5"></div>
+      <div
+        class="W-popup-options-buttons [&>span]:mt-1.5 [&>span]:inline-block [&>span]:w-[240px]"
+      ></div>
+    </div>
+    <!-- alert -->
+    <div class="W-popup-alert">
+      <div class="W-popup-alert-title text-center font-bold mb-1.5"></div>
+      <div
+        class="W-popup-alert-button [&>span]:m-auto [&>span]:block [&>span]:w-10 [&>span]:text-center"
+      ></div>
+    </div>
+    <!--Tooltip-->
+    <div
+      id="W-popup-tooltip"
+      class="fixed px-3 py-1 max-w-[200px] bg-gray-800 text-white text-sm rounded shadow-lg z-50"
+    ></div>
+
+    <!--Cover search-->
+    <!-- These elements are removed from document.body and used only
+		for cloning 
+		
+		Please note that although an <img> element is shown here, the 
+		elements are actually created in javascript, so don't
+		use inline styling on the <img> element below. -->
+    <div class="cover-search inline-block">
+      <div
+        class="cover-search-title font-bold mb-[6px] break-words whitespace-normal max-w-full"
+      ></div>
+      <div
+        class="cover-search-params mt-[10px] mb-[4px] flex items-center justify-between"
+      >
+        <span>Try artist:</span>
+        <input
+          class="font-inherit outline outline-1 outline-black px-[4px] ml-[4px]"
+        />
+      </div>
+      <div
+        class="cover-search-params mt-[10px] mb-[4px] flex items-center justify-between"
+      >
+        <span>Try album:</span>
+        <input
+          class="font-inherit outline outline-1 outline-black px-[4px] ml-[4px]"
+        />
+      </div>
+      <div
+        class="cover-search-buttons mt-[12px] mb-[12px] pt-[14px] border-t border-[#c7cdd6] flex justify-between"
+      >
+        <span class="W-button inline-block w-[120px] text-center"
+          >Back to options<input
+        /></span>
+        <span class="W-button inline-block w-[120px] text-center"
+          >Search Again<input
+        /></span>
+      </div>
+      <div
+        class="cover-search-instruction mt-[14px] pt-[8px] border-t border-[#c7cdd6]"
+      >
+        Click image to view and select ...
+      </div>
+      <div
+        class="cover-search-images inline-block w-[280px] max-h-[350px] overflow-auto"
+      >
+        <img
+          class="block max-w-[200px] h-auto pt-[8px] pb-[2px] cursor-pointer"
+          src=""
+        />
+      </div>
+      <div class="cover-search-pagination flex justify-between mt-[10px]">
+        <a class="cursor-pointer">prev</a>
+        <a class="link cursor-pointer underline">next</a>
+      </div>
+    </div>
+    <!-- Cover directory -->
+    <!-- These elements are removed from document.body and used only
+		for cloning -->
+    <div class="cover-directory inline-block">
+      <div
+        class="cover-directory-title font-bold mb-[4px] break-words whitespace-normal max-w-full"
+      ></div>
+      <div class="cover-directory-buttons pt-[12px] mb-[12px]">
+        <span class="W-button inline-block ml-0">Back to options<input /></span>
+      </div>
+    </div>
+    <!--Import Zipfile Confirm Content-->
+    <!-- These elements are removed from document.body and used only
+		for cloning 
+
+		The empty span beneath <div class="import-zipfile-confirm-path"> is
+		used only to display the name of any directory in the proposed unzip
+		path that has yet to be created. Typically, this will be the directory
+		to be named after the album being unzipped. For each of the other
+		elements of the proposed unzip path, we will clone an
+		"import-cwd-element", to show that it is a clickable link. -->
+    <div class="import-zipfile-confirm-content inline-block overflow-auto">
+      <div class="import-zipfile-confirm-filename font-bold mb-[8px]"></div>
+      <div class="import-zipfile-confirm-buttons mt-[12px] mb-[12px]">
+        <span class="W-button ml-0">Confirm<input /></span>
+        <span class="W-button">Reload<input /></span>
+      </div>
+      <div class="import-zipfile-confirm-path mb-[8px]">
+        <span></span>
+      </div>
+      <div class="import-zipfile-confirm-filelist">
+        <div
+          class="import-zipfile-item flex justify-between cursor-pointer hover:bg-gray-300"
+        >
+          <span></span>
+          <span
+            class="h-[24px] w-[24px] hover:bg-no-repeat hover:bg-[url('icons/black_x.png')]"
+          ></span>
+        </div>
+      </div>
+    </div>
+    <!--Import Zipfile Directory-->
+    <!-- These elements are removed from document.body and used only
+		for cloning -->
+    <div class="import-zipfile-directory inline-block">
+      <div class="import-zipfile-directory-buttons pt-[12px] mb-[12px]">
+        <span class="W-button inline-block ml-0"
+          >Use This Directory<input
+        /></span>
+        <span class="W-button inline-block">Create New Directory<input /></span>
+      </div>
+      <div
+        class="W-popup-directory ml-[4px] inline-block overflow-auto max-h-[400px] min-w-[350px]"
+      ></div>
+    </div>
+    <!--Import Popup Buttons-->
+    <!-- These elements are removed from document.body and used only
+		for cloning -->
+    <div class="W-import-popup-buttons justify-center gap-3 flex pt-[20px]">
+      <span class="W-button">
+        Pending
+        <input />
+      </span>
+      <span class="W-button">
+        Directories
+        <input />
+      </span>
+    </div>
+    <!-- Paginator -->
+    <!-- These elements are removed from document.body and used only
+		for cloning 
+		
+		The <ul> element is dropped, so don't style it here -->
+    <ul id="paginator-for-cloning">
+      <li>
+        <span
+          class="inline-block px-3 py-1 ml-[-1px] border border-gray-300 rounded-sm"
+        >
+          <select class="border border-black rounded-sm text-sm">
+            <option></option>
+          </select>
+        </span>
+      </li>
+    </ul>
+    <!-- QFile -->
+    <!-- These elements are removed from document.body and used only
+		for cloning -->
+    <div class="qfile flex flex-col max-w-[85vw] pb-2">
+      <div class="qfile-buttons flex flex-wrap items-center">
+        <span class="W-button my-1"> Copy selected to artist </span>
+        <span class="W-button"> Copy selected to album </span>
+        <span class="W-button"> Copy selected to songs </span>
+        <span class="W-button"> Remove </span>
+        <span class="W-button"> Back </span>
+        <span class="w-full"></span>
+        <span class="my-2 px-1">Start with song #</span>
+        <input class="outline outline-1 outline-black" type="text" size="2" />
+      </div>
+      <div
+        class="static-list max-h-[400px] w-[85vw] lg:w-[650px] mt-[8px] outline outline-1 outline-black p-[4px] overflow-auto"
+      >
+        <div
+          class="list-item w-auto py-0.5 cursor-pointer hover:bg-gray-300 border-b last:border-0 border-gray-300 text-sm select-none"
+        ></div>
+      </div>
+    </div>
+    <!-- Search Edit -->
+    <!-- These elements are removed from document.body and used only
+		for cloning -->
+    <div class="search-edit-shield absolute w-full h-full top-0 left-0"></div>
+    <div
+      class="search-edit-merge-container inline-block max-h-[70vh] overflow-auto"
+    >
+      <div
+        class="search-edit-merge flex flex-row justify-between min-w-[500px] border-b border-black font-bold pb-3"
+      >
+        <span class="inline-block whitespace-normal w-[300px]">Album</span>
+        <span class="inline-block whitespace-normal w-[100px]">Merge into</span>
+        <span class="inline-block whitespace-normal w-[100px]">Merge from</span>
+      </div>
+      <div
+        class="search-edit-merge search-edit-merge-albums flex flex-row justify-between min-w-[500px] border-b border-black"
+      >
+        <span class="inline-block whitespace-normal w-[300px]"></span>
+        <span class="inline-block whitespace-normal w-[100px]">
+          <input type="radio" name="W_merge_albums_radio_button" />
+        </span>
+        <span class="inline-block whitespace-normal w-[100px]">
+          <input type="checkbox" name="W_merge_albums_checkbox" />
+        </span>
+      </div>
+      <div
+        class="search-edit-merge-buttons flex flex-row justify-center min-w-[500px] mt-5"
+      >
+        <span class="W-button">
+          Merge (Ctrl-S)
+          <input />
+        </span>
+        <span class="W-button">
+          Cancel (Esc)
+          <input />
+        </span>
+      </div>
+    </div>
+    <div
+      class="search-edit-move-tracks-container inline-block max-h-[70vh] overflow-auto"
+    >
+      <div
+        class="search-edit-move-tracks flex flex-row justify-between min-w-[450px] border-b border-black font-bold pb-3"
+      >
+        <span class="inline-block whitespace-normal w-[300px]"></span>
+        <span class="inline-block whitespace-normal w-[100px]"></span>
+        <span class="W-button">
+          Search for Artist
+          <input />
+        </span>
+      </div>
+      <div
+        class="search-edit-move-tracks search-edit-move-tracks-albums flex flex-row justify-between min-w-[450px] border-b border-black"
+      >
+        <span class="inline-block whitespace-normal w-[300px]"></span>
+        <span class="inline-block whitespace-normal">
+          <input type="radio" name="W_move_tracks_radio_button" />
+        </span>
+      </div>
+      <div
+        class="search-edit-move-tracks-buttons flex flex-row justify-center min-w-[450px] mt-5"
+      >
+        <span class="W-button">
+          Move Tracks (Ctrl-S)
+          <input />
+        </span>
+        <span class="W-button">
+          Cancel (Esc)
+          <input />
+        </span>
+      </div>
+    </div>
+    <div
+      id="toast"
+      class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white py-2 px-4 rounded-md hidden z-50"
+    ></div>
+  </body>
+</html>
