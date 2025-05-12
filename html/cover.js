@@ -157,6 +157,9 @@ W.cover.google_search = function (artist, album, page) {
     });
     return;
   }
+  W.util.Popup.processing();
+  W.util.Popup.cleanup = function () {};
+  W.util.Popup.bar.innerHTML = "Searching google ...";
   W.google.search({
     start: W.cover.google_last_search.next,
     query: query,
@@ -189,9 +192,6 @@ W.cover.google_search = function (artist, album, page) {
       });
     },
   });
-  W.util.Popup.processing();
-  W.util.Popup.cleanup = function () {};
-  W.util.Popup.bar.innerHTML = "Searching google ...";
 };
 
 W.cover.google_results = function (o) {
@@ -412,9 +412,9 @@ W.cover.coverartarchive_results = function (o) {
 //Displaying search results
 
 W.cover.search_results = function (o, title) {
-  if (!o.results) {
-    return;
-  }
+  // if (!o.results) {
+  //   return;
+  // }
   var div = W.cover.CoverSearch.cloneNode(true);
   var loaded_images = 0;
   var show = function () {
@@ -466,6 +466,7 @@ W.cover.search_results = function (o, title) {
   if (o.error) {
     div.querySelector(".cover-search-instruction").innerHTML = o.error;
     show();
+    return;
   } else {
     div.querySelector(".cover-search-instruction").innerHTML =
       "Click image to view and select ...";

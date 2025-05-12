@@ -61,11 +61,21 @@ class Song(object):
                 if m.album_art_uri[0:4] == 'http':
                     self.album_art_uri = m.album_art_uri
                 else:
-                    self.album_art_uri = base_url + m.album_art_uri
+                    raw_uri = base_url + m.album_art_uri
+                    self.album_art_uri = "/get_cover?uri=" + quote(raw_uri)
             else:
                 self.album_art_uri = None
+            try:
+                raw_uri = m.resources[0].uri
+                decoded = urllib.parse.unquote(raw_uri)
+                if decoded.startswith("x-sonos-spotify:"):
+                    uri = decoded[len("x-sonos-spotify:"):].split('?')[0]
+                else:
+                    uri = decoded
+                self.id = uri
+            except:
+                self.id = None
             self.length = m.resources[0].duration
-            self.id = m.resources[0].uri
         else:
             self.artist = None
             self.album = None

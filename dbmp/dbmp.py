@@ -5,9 +5,10 @@ from .sp_factory import spServerFactory
 from .paths import CERTFILE, KEYFILE, WEBPATH, Musicpath
 from .config import PORT, WS_PORT, SSL_PORT, WSS_PORT, SP_PORT
 from .config import ERRLOG_TAIL_EXECUTABLE, ERRLOG_TAIL_ARGS
+from .config import GOOGLE_KEY, GOOGLE_CX
 from .meta import __version__
 from .util import util, dbpooled, database_serialised
-from .util import print_browser_connection_hint
+from .util import print_browser_connection_hint, IP
 from .serialiser import Serialiser
 from . import progress
 from . import system
@@ -34,6 +35,9 @@ from twisted.web.static import NoRangeStaticProducer
 from twisted.web.static import File
 from twisted.web.server import NOT_DONE_YET
 from twisted.web.server import Site
+from twisted.web.client import Agent, readBody
+from twisted.web.http_headers import Headers
+from urllib.parse import unquote
 import weakref
 from PIL import Image
 import json
@@ -168,6 +172,49 @@ class Tget_cover(Resource):
     isLeaf = True
 
     def render_GET(self, request):
+
+        args = request.args
+        uri_param = args.get(b'uri', [b''])[0].decode()
+
+        if uri_param:
+            # Proxy request to remote Sonos image URL
+            if not IP.is_local_lan_url(uri_param):
+                request.setResponseCode(400)
+                request.write(b"Invalid URI")
+                request.finish()
+                return NOT_DONE_YET
+
+            uri_param = unquote(uri_param)
+            agent = Agent(reactor)
+
+            d = agent.request(b"GET", uri_param.encode(), Headers({}), None)
+
+            def handle_response(response):
+                return readBody(response).addCallback(lambda body: (response, body))
+
+            def process_body(pair):
+                response, body = pair
+                headers = response.headers.getRawHeaders(b"Content-Type")
+                if headers:
+                    request.setHeader(b"Content-Type", headers[0])
+                request.setHeader(b"Access-Control-Allow-Origin", b"*")
+                request.setHeader(b"Content-Length",
+                                  str(len(body)).encode("utf8"))
+                request.write(body)
+                request.finish()
+
+            def process_error(failure):
+                log.error("Cover proxy failed: %s", failure)
+                request.setResponseCode(502)
+                request.write(b"Failed to fetch cover from Sonos")
+                request.finish()
+
+            d.addCallback(handle_response)
+            d.addCallback(process_body)
+            d.addErrback(process_error)
+            d.addErrback(logError)
+            return NOT_DONE_YET
+
         uri = request.uri.decode('utf8')
         if len(uri) > 13 and uri[11] == 'd':
             d = defer.Deferred()
@@ -361,9 +408,10 @@ class WSFactory(WebSocketServerFactory):
                      "password_set": not not objects['config'].get('pwd')})
         # Send Google credentials to newly connected client
         credentials = {
-            "key": objects['config'].get("GOOGLE_KEY"),
-            "cx": objects['config'].get("GOOGLE_CX")
+            "key": GOOGLE_KEY,
+            "cx": GOOGLE_CX
         }
+        print(credentials)
         self.WS_send(socket, {"type": "google", "google": credentials})
         self.WS_send(socket, {
                      "type": "password",

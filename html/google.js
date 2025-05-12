@@ -22,9 +22,12 @@ W.google.callnext = function () {
 };
 
 W.google.execute = function () {
-  if (!W.data.google.key) return;
-  if (!W.data.google.cx) return;
   var args = W.google.queue[0];
+  if (!W.data.google.key || !W.data.google.cx) {
+    if (args.error) args.error();
+    W.google.callnext();
+    return;
+  }
   if (W.google.daily_limit_exceeded) {
     args.error
       ? args.error(

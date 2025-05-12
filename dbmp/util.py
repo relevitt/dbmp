@@ -17,6 +17,7 @@ import random
 import hashlib
 import functools
 import socket
+import ipaddress
 from .logging_setup import getLogger
 log = getLogger(__name__)
 
@@ -415,6 +416,15 @@ class ip(object):
                 network_down_function()
             else:
                 network_up_function()
+
+    def is_local_lan_url(self, url):
+        try:
+            # extract `192.168.68.102:1400`
+            parsed = url.split("//", 1)[-1].split("/")[0]
+            ip_str = parsed.split(":")[0]
+            return ipaddress.IPv4Address(ip_str) in ipaddress.IPv4Network(self.IP + '/24', strict=False)
+        except:
+            return False
 
 
 IP = ip()

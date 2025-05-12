@@ -1280,6 +1280,10 @@ progress::-webkit-progress-value {
   margin-top: 8px;
 }
 
+.mr-1 {
+  margin-right: 0.25rem;
+}
+
 .box-border {
   box-sizing: border-box;
 }
@@ -1402,6 +1406,54 @@ progress::-webkit-progress-value {
 
 .h-screen {
   height: 100vh;
+}
+
+.h-24 {
+  height: 6rem;
+}
+
+.h-4 {
+  height: 1rem;
+}
+
+.h-\[1\.1em\] {
+  height: 1.1em;
+}
+
+.h-\[0\.9em\] {
+  height: 0.9em;
+}
+
+.h-20 {
+  height: 5rem;
+}
+
+.h-\[1em\] {
+  height: 1em;
+}
+
+.h-\[3em\] {
+  height: 3em;
+}
+
+.h-\[2em\] {
+  height: 2em;
+}
+
+.h-\[1\.75em\] {
+  height: 1.75em;
+}
+
+.h-\[1\.5em\] {
+  height: 1.5em;
+}
+
+.h-\[22px\] {
+  height: 22px;
+}
+
+.h-\[20px\] {
+  height: 20px;
 }
 
 .max-h-12 {
@@ -1622,6 +1674,30 @@ progress::-webkit-progress-value {
 
 .w-screen {
   width: 100vw;
+}
+
+.w-32 {
+  width: 8rem;
+}
+
+.w-24 {
+  width: 6rem;
+}
+
+.w-20 {
+  width: 5rem;
+}
+
+.w-36 {
+  width: 9rem;
+}
+
+.w-16 {
+  width: 4rem;
+}
+
+.w-\[7\.5em\] {
+  width: 7.5em;
 }
 
 .min-w-\[250px\] {
@@ -1939,6 +2015,18 @@ progress::-webkit-progress-value {
   margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
 }
 
+.space-y-0\.5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));
+}
+
+.space-x-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.25rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
 .self-start {
   align-self: flex-start;
 }
@@ -2006,6 +2094,10 @@ progress::-webkit-progress-value {
 
 .rounded-sm {
   border-radius: 0.125rem;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
 }
 
 .\!border-2 {
@@ -2251,6 +2343,10 @@ progress::-webkit-progress-value {
   background-image: none;
 }
 
+.bg-\[url\(\'icons\/spotify_logo_full\.svg\'\)\] {
+  background-image: url('icons/spotify_logo_full.svg');
+}
+
 .bg-contain {
   background-size: contain;
 }
@@ -2272,6 +2368,11 @@ progress::-webkit-progress-value {
      object-fit: contain;
 }
 
+.object-cover {
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
 .p-0 {
   padding: 0px;
 }
@@ -2286,6 +2387,10 @@ progress::-webkit-progress-value {
 
 .p-\[5px\] {
   padding: 5px;
+}
+
+.p-1 {
+  padding: 0.25rem;
 }
 
 .px-1 {
@@ -2578,6 +2683,18 @@ progress::-webkit-progress-value {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+
+.text-\[80\%\] {
+  font-size: 80%;
+}
+
+.text-\[85\%\] {
+  font-size: 85%;
+}
+
+.text-\[75\%\] {
+  font-size: 75%;
 }
 
 .font-bold {

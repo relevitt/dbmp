@@ -249,9 +249,15 @@
             class="relative w-[90%] mx-auto mt-2 mb-0.5 before:block before:pt-[100%]"
           >
             <div
-              id="player-image"
-              class="absolute inset-0 border border-gray-300 flex items-center justify-center text-[150%] bg-no-repeat bg-center bg-contain bg-[url('icons/blank.png')]"
-            ></div>
+              class="absolute inset-0 rounded-lg overflow-hidden border border-gray-300"
+            >
+              <img
+                id="player-image"
+                class="w-full h-full object-cover"
+                src="icons/blank.png"
+                alt="Cover art"
+              />
+            </div>
           </div>
           <div
             id="player-player"
@@ -265,6 +271,14 @@
               id="player-artist"
               class="w-[92%] text-center mt-2 mx-auto"
             ></div>
+            <a id="player-spotify-link" href="#" target="_blank" class="block">
+              <img
+                id="player-spotify"
+                src="icons/spotify_logo_full_black.svg"
+                alt="Spotify logo"
+                class="mt-3 w-24 h-auto mx-auto"
+              />
+            </a>
             <div
               id="player-progress-container"
               class="relative h-6 w-[85%] mt-4 mb-5 lg:mb-0 mx-auto"
@@ -437,16 +451,20 @@
           <!-- Search Database -->
           <span
             id="search-database"
-            class="search-button W-button flex flex-grow-0 lg:h-9"
+            class="search-button W-button flex flex-grow-0 h-9 mr-2"
           >
             <span class="m-auto">Database</span>
           </span>
           <!-- Search Spotify -->
           <span
             id="search-spotify"
-            class="search-button W-button flex flex-grow-0 lg:h-9"
+            class="search-button W-button flex flex-grow-0 h-9 mr-2"
           >
-            <span class="m-auto">Spotify</span>
+            <img
+              src="icons/spotify_logo_full_black.svg"
+              alt="Spotify logo"
+              class="mx-auto"
+            />
           </span>
           <!-- Close Button -->
           <span
@@ -550,7 +568,9 @@
               class="search-results-li flex flex-col relative max-w-[160px] mr-4 lg:mr-10 mb-5 cursor-pointer"
             >
               <!-- Image SPAN -->
-              <span class="flex h-[150px] w-[150px] bg-white leading-[18px]">
+              <span
+                class="flex h-[150px] w-[150px] rounded-md overflow-hidden bg-white leading-[18px]"
+              >
                 <img
                   class="block max-h-[150px] max-w-[150px] h-auto w-auto m-auto"
                   src=""
@@ -564,7 +584,9 @@
               class="search-results-track-li flex flex-col relative max-w-[160px] mr-4 lg:mr-10 mb-5 cursor-pointer"
             >
               <!-- Image SPAN -->
-              <span class="flex h-[150px] w-[150px] bg-white leading-[18px]">
+              <span
+                class="flex h-[150px] w-[150px] rounded-md overflow-hidden bg-white leading-[18px]"
+              >
                 <img
                   class="block max-h-[150px] max-w-[150px] h-auto w-auto m-auto"
                   src=""
@@ -590,7 +612,7 @@
           >
             <span
               id="search-artist-details-image"
-              class="flex col-start-1 row-start-1 row-span-2 items-center justify-center h-[150px] lg:h-[21vw] lg:w-[21vw] bg-white m-auto"
+              class="flex col-start-1 row-start-1 row-span-2 items-center justify-center h-[150px] lg:h-[21vw] lg:w-[21vw] rounded-lg overflow-hidden bg-white m-auto"
             >
               <img class="w-full h-full object-contain cursor-pointer" src="" />
             </span>
@@ -648,7 +670,7 @@
                 >
                   <span
                     id="search-artist-album-details-image"
-                    class="flex lg:h-[15vw] lg:w-[15vw] bg-white"
+                    class="flex lg:h-[15vw] lg:w-[15vw] rounded-md overflow-hidden bg-white"
                   >
                     <img
                       class="w-full h-full object-contain cursor-pointer"
@@ -664,6 +686,17 @@
                     id="search-artist-album-details-buttons"
                     class="flex flex-col justify-start items-center lg:w-[15vw]"
                   >
+                    <span
+                      id="search-artist-album-details-button-spotify"
+                      class="W-button w-[6em] lg:w-[7em] ml-0 mt-1 lg:mt-1.5 p-0 lg:p-1 text-center flex items-center justify-center whitespace-nowrap"
+                    >
+                      <span class="mr-1">View on</span>
+                      <img
+                        src="icons/spotify_logo_round_black.svg"
+                        alt="Spotify logo"
+                        class="h-[20px] w-auto"
+                      />
+                    </span>
                     <span
                       id="search-artist-album-details-button-play"
                       class="W-button w-[6em] lg:w-[7em] ml-0 mt-1 lg:mt-1.5 p-0 lg:p-1 text-center"
@@ -754,7 +787,9 @@
                   <li
                     class="search-artist-top-track flex flex-row justify-start items-center w-[95%] border-t first:border-t-0 border-gray-300 cursor-pointer hover:bg-gray-300"
                   >
-                    <span class="min-h-[48px] flex w-12 bg-white self-start">
+                    <span
+                      class="min-h-[48px] flex w-12 rounded-sm overflow-hidden bg-white self-start"
+                    >
                       <img
                         class="block max-h-12 max-w-12 h-auto w-auto m-auto"
                         src=""
@@ -783,7 +818,7 @@
                     class="search-artist-recommendations-track flex flex-row justify-start items-center w-[95%] border-t first:border-t-0 border-gray-300 cursor-pointer hover:bg-gray-300"
                   >
                     <span
-                      class="search-track-image min-h-[48px] flex w-12 bg-white self-start"
+                      class="search-track-image min-h-[48px] flex w-12 rounded-sm overflow-hidden bg-white self-start"
                     >
                       <img
                         class="block max-h-12 max-w-12 h-auto w-auto m-auto"
@@ -1417,7 +1452,7 @@
         class="cover-search-images inline-block w-[280px] max-h-[350px] overflow-auto"
       >
         <img
-          class="block max-w-[200px] h-auto pt-[8px] pb-[2px] cursor-pointer"
+          class="block max-w-[200px] h-auto rounded-lg pt-[8px] pb-[2px] cursor-pointer"
           src=""
         />
       </div>

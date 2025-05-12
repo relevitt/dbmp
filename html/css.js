@@ -305,7 +305,8 @@ W.css = {
         block
     `,
   st_selected: `
-        bg-gray-300
+        border-black
+        border-1
     `,
   system_selected: `
         bg-gray-300

@@ -17,30 +17,38 @@ W.player.millisecs_to_str = function (m) {
 };
 
 W.player.updateCover = function (uri) {
-  var div = document.querySelector("#player-image");
-  div.style.backgroundImage = "url()";
-  if (uri == "disconnected") div.textContent = "The player is disconnected";
-  else {
-    uri = W.util.fixAlbumArtURL(uri);
-    let src = uri ? uri : "icons/NoImage.png";
-    div.textContent = "";
-    var song = W.data.status.song;
-    var set_img = function (e) {
-      song == W.data.status.song &&
-        (div.style.backgroundImage = "url(" + e.target.src + ")");
-      img = undefined;
-      delete e.target;
-      if (W.data.status.song.albumid) W.css.addClasses(div, "player_pointer");
-      else W.css.removeClasses(div, "player_pointer");
-    };
-    var img = new Image();
-    img.src = src;
-    img.addEventListener("load", set_img);
-    img.onerror = function (e) {
-      img = undefined;
-      delete e.target;
-    };
+  var img = document.querySelector("#player-image");
+
+  if (uri === "disconnected") {
+    img.src = "icons/blank.png";
+    img.alt = "The player is disconnected";
+    W.css.removeClasses(img, "player_pointer");
+    return;
   }
+
+  uri = W.util.fixAlbumArtURL(uri);
+  let src = uri || "icons/NoImage.png";
+
+  // Only update image after it's loaded (optional)
+  const song = W.data.status.song;
+  const tempImg = new Image();
+  tempImg.onload = function () {
+    if (song === W.data.status.song) {
+      img.src = tempImg.src;
+      img.alt = "Cover art";
+      if (W.data.status.song.albumid) {
+        W.css.addClasses(img, "player_pointer");
+      } else {
+        W.css.removeClasses(img, "player_pointer");
+      }
+    }
+  };
+  tempImg.onerror = function () {
+    img.src = "icons/NoImage.png";
+    img.alt = "Cover art not available";
+    W.css.removeClasses(img, "player_pointer");
+  };
+  tempImg.src = src;
 };
 
 W.player.init = function () {
@@ -57,6 +65,19 @@ W.player.song_change = function () {
     .artist
     ? W.data.status.song.artist
     : "[Unknown]";
+
+  const spotifyLink = document.getElementById("player-spotify-link");
+  const track = W.data.status.song;
+  W.css.removeClasses(spotifyLink, "hidden");
+
+  if (track.id && track.id.startsWith("spotify:track:")) {
+    const spotifyId = track.id.split(":")[2];
+    spotifyLink.href = "https://open.spotify.com/track/" + spotifyId;
+    W.css.removeClasses(spotifyLink, "hidden");
+  } else {
+    spotifyLink.href = "#";
+    W.css.addClasses(spotifyLink, "hidden");
+  }
 };
 
 W.player.song_position = function (pos) {

@@ -363,8 +363,11 @@ W.search.build = function (args) {
         categories,
         selected_button,
       );
-    if (album_mode) categories = ["play", "add", "replace", "edit", "more"];
-    if (playlist_mode) categories = ["play", "add", "replace", "edit", "more"];
+    categories = [];
+    if (W.search_top.object == "spotify") categories.push("spotify");
+    if (album_mode) categories.push("play", "add", "replace", "edit", "more");
+    if (playlist_mode)
+      categories.push("play", "add", "replace", "edit", "more");
     if (album_mode || playlist_mode)
       W.search.set_buttons(
         document.querySelector("#search-artist-album-details-buttons"),
@@ -884,6 +887,26 @@ from a UL listing has been removed, because I wasn't using it.
 It might be reinstated for the mobile interface, so I've
 not yet deleted the functionaility here.
 */
+
+W.search.album_spotify = function () {
+  let id = W.search.dataObject.id;
+  if (!id || !id.startsWith("spotify:")) return;
+
+  // Handle synthetic IDs like artistRecommendations or artistTopTracks
+  if (id.includes("ecommendation") || id.includes("artistTopTracks")) {
+    const parts = id.split(":");
+    if (parts.length >= 3) {
+      id = `spotify:artist:${parts[2]}`;
+    }
+  }
+
+  const parts = id.split(":");
+  if (parts.length !== 3) return;
+
+  const [_, type, itemId] = parts;
+  const url = `https://open.spotify.com/${type}/${itemId}`;
+  window.open(url, "_blank");
+};
 
 W.search.album_play = function () {
   W.search.play_album();

@@ -75,6 +75,7 @@ class sonos_group_WS(object):
             song['title'] = s.title
             song['album_art_uri'] = album_art_uri
             song['albumid'] = self.get_albumid(s)
+            song['id'] = s.id
             items['type'] = 'song'
             items['song'] = song
             items['song_length'] = str_to_ms(s.length)
@@ -308,6 +309,7 @@ class sonos_group_WS(object):
             song['title'] = self.status.song.title
             song['album_art_uri'] = art_uri
             song['albumid'] = self.get_albumid(self.status.song)
+            song['id'] = self.status.song.id
             results['volume'] = self.status.volume
             results['mute'] = self.status.mute
             results['song_progress'] = str_to_ms(self.status.song_progress)

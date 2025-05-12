@@ -44,6 +44,11 @@ SPOTIFY_CLIENT_ID = 'e47c6be17ef944dc8335617bf8f56b21'
 # Redirect URI for Spotify auth — must match the 'PORT' defined above (http, not https)
 SPOTIFY_REDIRECT_URI = 'http://localhost:8002/spotify_auth'
 
+# Google custom search credentials. If you wish to perform a google search for
+# artwork, please add your credentials here:
+GOOGLE_KEY = ""
+GOOGLE_CX = ""
+
 # Choose the appropriate region: 'US' or 'EU'
 SONOS_REGION_SPOTIFY = 'EU'
 
