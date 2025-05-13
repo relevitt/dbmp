@@ -800,14 +800,13 @@ class spotify(object):
         new_args = args.copy()
         new_args['id'] = args['container_id']
         results = yield self.search_recommendations(new_args)
+        for item in results['results']:
+            item['id'] = item.pop('itemid')
+            item['song'] = item.pop('title')
         if not fulldata:
-            tracks = [item['itemid'] for item in results['results']]
+            tracks = [item['id'] for item in results['results']]
         else:
-            for item in results['results']:
-                item['id'] = item.pop('itemid')
-                item['song'] = item.pop('title')
             tracks = results['results']
-
         self.objects['spotify_cache'].add_spotify_data(
             results['results'])
 

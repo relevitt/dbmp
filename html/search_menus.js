@@ -261,7 +261,16 @@ W.search_menus.track_menu_init = function (index, e) {
   W.css.addClasses(parent, "search_menu_showing");
 };
 
-W.search_menus.track_menu_tidyup = () => {
+W.search_menus.track_menu_tidyup = (args) => {
+  if (args && !args.e) return;
+  if (args && args.e) {
+    switch (args.e.target.innerHTML) {
+      case "Track recommendations":
+        break;
+      default:
+        return;
+    }
+  }
   var parent = W.search_menus.track_menu.targetElement;
   if (!parent) return;
   while (parent.nodeName != "LI") parent = parent.parentElement;
@@ -315,7 +324,12 @@ W.search_menus.add_track = function (cb, menu_object, index) {
     W.util.toast("Track added");
   W.search_menus.submenu_one_variables.args = {};
   if (index != undefined) {
-    W.search_menus.submenu_one_variables.args.indices = [index];
+    if (W.search_top.object == "database")
+      W.search_menus.submenu_one_variables.args.indices = [index];
+    else
+      W.search_menus.submenu_one_variables.args.tracks = [
+        W.search.dataObject.data[index].itemid,
+      ];
   }
   W.search_menus.create_submenu_one(cb, menu_object);
 };

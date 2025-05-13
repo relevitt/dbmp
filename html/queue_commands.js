@@ -192,8 +192,10 @@ W.queue_commands.add_tracks = function (cb, menu_object, indices) {
 };
 
 W.queue_commands.transfer_queue = function (cb, menu_object) {
-  W.search_menus.submenu_one_variables.afterwards = () =>
+  W.search_menus.submenu_one_variables.afterwards = () => {
     W.util.toast("Queue transferred");
+    W.data.WS_change_sonos_group(W.search_menu_utilities.last_dest_id);
+  };
   W.search_menus.submenu_one_variables.args = {};
   W.search_menus.submenu_one_variables.args.sonos_uid =
     W.data.status.queues[W.queue_selecter.selectedIndex].id;

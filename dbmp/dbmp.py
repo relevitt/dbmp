@@ -35,7 +35,7 @@ from twisted.web.static import NoRangeStaticProducer
 from twisted.web.static import File
 from twisted.web.server import NOT_DONE_YET
 from twisted.web.server import Site
-from twisted.web.client import Agent, readBody
+from twisted.web.client import Agent, BrowserLikeRedirectAgent, readBody
 from twisted.web.http_headers import Headers
 from urllib.parse import unquote
 import weakref
@@ -185,7 +185,7 @@ class Tget_cover(Resource):
                 return NOT_DONE_YET
 
             uri_param = unquote(uri_param)
-            agent = Agent(reactor)
+            agent = BrowserLikeRedirectAgent(Agent(reactor))
 
             d = agent.request(b"GET", uri_param.encode(), Headers({}), None)
 
@@ -411,7 +411,6 @@ class WSFactory(WebSocketServerFactory):
             "key": GOOGLE_KEY,
             "cx": GOOGLE_CX
         }
-        print(credentials)
         self.WS_send(socket, {"type": "google", "google": credentials})
         self.WS_send(socket, {
                      "type": "password",

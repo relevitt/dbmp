@@ -53,7 +53,7 @@ W.menu = function (args) {
 					            if the function returns false, the menu will not be displayed
 
     args.before_click:function to be executed just before items[].onclick is executed (eg to remove
-                      styling)
+                      styling). Called with {e:e}, where e is the click event
 
     args.display:     function to be executed after the menu is displayed
 
@@ -383,7 +383,7 @@ W.menu.prototype.onclick = function (e) {
   ) {
     this.submenuShowing.hide();
   }
-  this.before_click && this.before_click();
+  this.before_click && this.before_click({ e: e });
   this.menu_objects[i].onclick(e);
   if (this.menu_objects && this.menu_objects[i]) {
     if (this.menu_objects[i].sticky) return;
