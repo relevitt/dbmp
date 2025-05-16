@@ -1,3 +1,5 @@
+<link rel="icon" href="data:," />
+
 <script>
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
@@ -7,10 +9,14 @@
     window.opener.postMessage({ spotify_code: code, uuid: state }, "*");
 
     let seconds = 5;
-    const message = document.createElement("p");
-    message.id = "countdown";
-    message.innerText = `This window will close in ${seconds} seconds.`;
-    document.body.appendChild(message);
+
+    document.body.innerHTML = `
+      <h2>Spotify Authorization Complete</h2>
+      <p>Authorization code has been sent to the main app.</p>
+      <p id="countdown">This window will close in ${seconds} seconds.</p>
+    `;
+
+    const countdown = document.getElementById("countdown");
 
     const interval = setInterval(() => {
       seconds--;
@@ -18,15 +24,9 @@
         clearInterval(interval);
         window.close();
       } else {
-        message.innerText = `This window will close in ${seconds} seconds.`;
+        countdown.innerText = `This window will close in ${seconds} seconds.`;
       }
     }, 1000);
-
-    document.body.innerHTML = `
-      <h2>Spotify Authorization Complete</h2>
-      <p>Authorization code has been sent to the main app.</p>
-    `;
-    document.body.appendChild(message);
   } else {
     document.body.textContent = "No code found in the URL.";
   }
