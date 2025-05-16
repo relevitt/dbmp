@@ -47,8 +47,17 @@ import subprocess
 from twisted.internet import reactor
 from datetime import datetime
 from .logging_setup import getLogger, setup_logging, WS_DATEFMT, LogStore
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    category=DeprecationWarning,
+    message="Using readBody with a transport that does not have an abortConnection method"
+)
 
 log = getLogger('dbmp.dbmp')
+
+
 
 objects = {
     'config': 0,
