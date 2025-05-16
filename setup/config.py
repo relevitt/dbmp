@@ -36,14 +36,6 @@ WS_PORT = 8003
 # SP_PORT is used for communication with subprocesses
 SP_PORT = 8004
 
-# These are the details registered with Spotify for accessing its Web API.
-# These values are public and safe to include in this file.
-# Users will authorize their own accounts at runtime and their tokens will
-# be stored on their local database
-SPOTIFY_CLIENT_ID = 'e47c6be17ef944dc8335617bf8f56b21'
-# Redirect URI for Spotify auth — must match the 'PORT' defined above (http, not https)
-SPOTIFY_REDIRECT_URI = 'http://localhost:8002/spotify_auth'
-
 # Google custom search credentials. If you wish to perform a google search for
 # artwork, please add your credentials here:
 GOOGLE_KEY = ""

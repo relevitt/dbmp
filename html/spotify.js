@@ -1,6 +1,29 @@
 "use strict";
 W.spotify = {};
 
+window.addEventListener("message", function (event) {
+  const data = event.data;
+
+  if (data.spotify_code && data.uuid) {
+    console.log("Received Spotify code via postMessage");
+
+    const query = new URLSearchParams({
+      code: data.spotify_code,
+      state: data.uuid
+    });
+
+    fetch(`/spotify_auth?${query}`)
+      .then(r => r.text())
+      .then((html) => {
+        console.log("Spotify linking completed.");
+        // Optional: show feedback in the UI
+      })
+      .catch(err => {
+        console.error("Failed to send Spotify code to backend:", err);
+      });
+  }
+});
+
 function generateCodeVerifier(length) {
   let text = "";
   let possible =
@@ -20,44 +43,39 @@ async function generateCodeChallenge(codeVerifier) {
     .replace(/=+$/, "");
 }
 
-W.spotify.auth = async function (same_window) {
+W.spotify.auth = async function () {
   const code_verifier = generateCodeVerifier(128);
   const code_challenge = await generateCodeChallenge(code_verifier);
 
-  const where = same_window === true ? "_self" : W.system.client_id;
-  if (where !== "_self") {
-    const win = window.open("", where);
-    if (win) win.focus();
-  }
-
   const cb = function (o) {
-    console.log(window.localStorage.getItem("code_challenge"));
-    if (o.results && o.results.spotify_client_id && o.results.redirect) {
-      var spotify_client_id = o.results.spotify_client_id;
-      var redirect = encodeURIComponent(o.results.redirect);
-      var URI = "https://accounts.spotify.com/authorize/?";
-      URI += "client_id=" + spotify_client_id;
-      URI += "&response_type=code";
-      URI += "&redirect_uri=" + redirect;
-      URI +=
-        "&scope=playlist-read-private%20playlist-read-collaborative%20playlist-modify-public%20";
-      URI +=
-        "playlist-modify-private%20user-library-read%20user-library-modify%20user-read-private%20";
-      URI += "streaming%20user-read-email%20";
-      URI += "user-follow-modify%20user-follow-read";
-      URI += "&code_challenge_method=S256";
-      URI += "&code_challenge=" + code_challenge;
-      URI += "&state=" + W.system.client_id;
-      window.open(URI, where);
-    } else window.open("spotify_error.html", where);
+    if (o.results && o.results.spotify_client_id) {
+      const spotify_client_id = o.results.spotify_client_id;
+      const redirect = encodeURIComponent("https://relevitt.github.io/dbmp/spotify_redirect.html");
+      const params = new URLSearchParams({
+        client_id: spotify_client_id,
+        response_type: "code",
+        redirect_uri: "https://relevitt.github.io/dbmp/spotify_redirect.html",
+        scope: "playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-read-private streaming user-read-email user-follow-modify user-follow-read",
+        code_challenge_method: "S256",
+        code_challenge: code_challenge,
+        state: W.system.client_id
+      });
+
+      // Open the Spotify auth window (which will redirect to your GitHub page)
+      const popup = window.open(`https://accounts.spotify.com/authorize?${params}`, "spotify_auth_popup");
+      if (popup) popup.focus();
+    } else {
+      window.open("spotify_error.html", "spotify_auth_popup");
+    }
   };
 
-  // We don't use W.system.get_jsonStr here, because this function may be called from
-  // a window that doesn't import system.js
-  var jsonStr = {};
-  jsonStr.cmd = "spotify.auth";
-  jsonStr.args = {};
-  jsonStr.args.client_id = W.system.client_id;
-  jsonStr.args.code_verifier = code_verifier;
+  // Request Spotify client ID + redirect URI from backend
+  const jsonStr = {
+    cmd: "spotify.auth",
+    args: {
+      client_id: W.system.client_id,
+      code_verifier: code_verifier
+    }
+  };
   W.util.JSONpost("/json", jsonStr, cb);
 };

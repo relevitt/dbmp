@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .config import SPOTIFY_CLIENT_ID as spotify_client_id
-from .config import SPOTIFY_REDIRECT_URI as redirect
 from .error import logError
 from .util import ms_to_str
 from .util import random_moves
@@ -23,6 +21,12 @@ from .logging_setup import getLogger
 log = getLogger(__name__)
 log.setLevel(DEBUG)
 
+# These are the details registered with Spotify for accessing its Web API.
+# These values are public and safe to include in this file.
+# Users will authorize their own accounts at runtime and their tokens will
+# be stored on their local database
+spotify_client_id = 'e47c6be17ef944dc8335617bf8f56b21'
+redirect = 'https://relevitt.github.io/dbmp/spotify_redirect.html'
 
 # This stores Spotify credentials for a browser client
 # If a client does not have a requested credential, None
@@ -2403,17 +2407,16 @@ class spotify(object):
                     'client_id': client_id,
                     'code_verifier': code_verifier
                 })
-
+                
                 return {
                     'spotify_client_id': spotify_client_id,
-                    'redirect': redirect
                 }
         except Exception as e:
             log.exception(e)
 
     @serialised
     def register_code(self, args):
-
+    
         # client_id is set to args['state'], which is the UUID of the browser
         # window that initiated the authorisation request. This is not to be
         # confused with the spotify_client_id, being Spotify's identifier
@@ -2437,7 +2440,7 @@ class spotify(object):
             if item['client_id'] == client_id:
                 code_verifier = item['code_verifier']
                 self.auth_requests.remove(item)
-
+                
         url = 'https://accounts.spotify.com/api/token'
         headers = {
             'Content-Type': ['application/x-www-form-urlencoded']
@@ -2449,6 +2452,7 @@ class spotify(object):
             'redirect_uri': redirect,
             'code_verifier': code_verifier
         }
+
         d = httpRequest('POST', url, headers, params)
 
         def error(warning):
