@@ -1,29 +1,34 @@
-<!DOCTYPE html>
-<html>
-  <head><title>Spotify Redirect Handler</title></head>
-  <body>
-    <script>
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      const state = params.get("state");
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  const state = params.get("state");
 
-      if (code) {
-        // Post the code back to the opener window
-        if (window.opener) {
-          window.opener.postMessage(
-            { spotify_code: code, uuid: state },
-            "*" // or restrict to your origin
-          );
-        }
+  if (code && window.opener) {
+    window.opener.postMessage({ spotify_code: code, uuid: state }, "*");
 
-        document.body.innerHTML = `
-          <h2>Spotify Authorization Complete</h2>
-          <p>Authorization code has been sent to the main app.</p>
-          <p>You may now close this window.</p>
-        `;
+    let seconds = 5;
+    const message = document.createElement("p");
+    message.id = "countdown";
+    message.innerText = `This window will close in ${seconds} seconds.`;
+    document.body.appendChild(message);
+
+    const interval = setInterval(() => {
+      seconds--;
+      if (seconds <= 0) {
+        clearInterval(interval);
+        window.close();
       } else {
-        document.body.textContent = "No code found in the URL.";
+        message.innerText = `This window will close in ${seconds} seconds.`;
       }
-    </script>  </body>
-</html>
+    }, 1000);
+
+    document.body.innerHTML = `
+      <h2>Spotify Authorization Complete</h2>
+      <p>Authorization code has been sent to the main app.</p>
+    `;
+    document.body.appendChild(message);
+  } else {
+    document.body.textContent = "No code found in the URL.";
+  }
+</script>
 
