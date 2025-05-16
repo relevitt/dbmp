@@ -1,36 +1,52 @@
-<link rel="icon" href="data:," />
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const state = params.get("state");
-
-    if (code && window.opener) {
-      window.opener.postMessage({ spotify_code: code, uuid: state }, "*");
-
-      let seconds = 5;
-
-      document.body.innerHTML = `
-        <h2>Spotify Authorization Complete</h2>
-        <p>Authorization code has been sent to the main app.</p>
-        <p id="countdown">This window will close in ${seconds} seconds.</p>
-      `;
-
-      const countdown = document.getElementById("countdown");
-
-      const interval = setInterval(() => {
-        seconds--;
-        if (seconds <= 0) {
-          clearInterval(interval);
-          window.close();
-        } else {
-          countdown.innerText = `This window will close in ${seconds} seconds.`;
-        }
-      }, 1000);
-    } else {
-      document.body.textContent = "No code found in the URL.";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spotify Authorization Complete</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      max-width: 500px;
+      margin: auto;
+      text-align: center;
+      background: #f9f9f9;
     }
-  });
-</script>
+    h2 {
+      color: #1DB954;
+    }
+    pre {
+      background: #eee;
+      padding: 1em;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h2>Spotify Authorization Complete</h2>
+  <p>Authorization code has been sent to the main app.</p>
+  <p>Please return to the main window to complete the setup.</p>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const state = params.get("state");
+
+      if (code && window.opener) {
+        window.opener.postMessage({ spotify_code: code, uuid: state }, "*");
+      } else if (!code) {
+        document.body.innerHTML = `
+          <h2>Authorization Failed</h2>
+          <p>No code was found in the URL.</p>
+          <p>Please try again.</p>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
 
