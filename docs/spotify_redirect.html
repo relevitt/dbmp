@@ -8,16 +8,22 @@
       const state = params.get("state");
 
       if (code) {
+        // Post the code back to the opener window
+        if (window.opener) {
+          window.opener.postMessage(
+            { spotify_code: code, uuid: state },
+            "*" // or restrict to your origin
+          );
+        }
+
         document.body.innerHTML = `
           <h2>Spotify Authorization Complete</h2>
-          <p>Copy this code and paste it into the app on your server device:</p>
-          <pre style="font-size:1.2em; padding: 1em; background:#eee;">${code}</pre>
-          <p><strong>UUID:</strong> ${state}</p>
+          <p>Authorization code has been sent to the main app.</p>
+          <p>You may now close this window.</p>
         `;
       } else {
         document.body.textContent = "No code found in the URL.";
       }
-    </script>
-  </body>
+    </script>  </body>
 </html>
 
