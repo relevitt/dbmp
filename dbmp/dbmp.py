@@ -90,7 +90,7 @@ class Config:
         'dbplayer_mute': int,
         'dbplayer_vol': int,
         'spotify_track_cache_last_sync': int,
-        'db_version': int,
+        'version': int,
         # Add more known type-casting rules here if needed
     }
 
