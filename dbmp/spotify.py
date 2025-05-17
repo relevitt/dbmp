@@ -31,6 +31,8 @@ redirect = 'https://relevitt.github.io/dbmp/spotify_redirect.html'
 # This stores Spotify credentials for a browser client
 # If a client does not have a requested credential, None
 # is returned
+
+
 class Client:
     def __init__(self, values=None):
         if values is None:
@@ -2344,13 +2346,22 @@ class spotify(object):
             if 'refresh_token' in data:
                 client.refresh_token = data['refresh_token']
 
+            self.update_all_clients_for_user(
+                client.user_id,
+                client.access_token,
+                client.refresh_token,
+                client.expires_in
+            )
+
             @dbpooled
             def save_token(tx, self, access_token, refresh_token, expires_in, client_id):
-                query = '''	UPDATE spotify_auth SET
-					 		access_token = ?,
-                            refresh_token = ?,
-							expires_in = ?
-							WHERE client_id = ?'''
+                query = ''' UPDATE spotify_auth SET
+                                access_token = ?,
+                                refresh_token = ?,
+                                expires_in = ?
+                            WHERE user_id = (
+                                SELECT user_id FROM spotify_auth_clients WHERE client_id = ?
+                            ) '''
                 tx.execute(query, (access_token, refresh_token,
                                    expires_in, client_id))
                 return access_token
@@ -2368,7 +2379,16 @@ class spotify(object):
 
         @dbpooled
         def get_info(tx, self):
-            query = ''' SELECT * FROM spotify_auth '''
+            query = ''' SELECT
+                            sac.client_id,
+                            sa.user_id,
+                            sa.access_token,
+                            sa.expires_in,
+                            sa.refresh_token
+                        FROM
+                            spotify_auth_clients sac
+                        JOIN
+                            spotify_auth sa ON sac.user_id = sa.user_id'''
             tx.execute(query)
             return [dict(row) for row in tx.fetchall()]
 
@@ -2407,7 +2427,7 @@ class spotify(object):
                     'client_id': client_id,
                     'code_verifier': code_verifier
                 })
-                
+
                 return {
                     'spotify_client_id': spotify_client_id,
                 }
@@ -2416,7 +2436,7 @@ class spotify(object):
 
     @serialised
     def register_code(self, args):
-    
+
         # client_id is set to args['state'], which is the UUID of the browser
         # window that initiated the authorisation request. This is not to be
         # confused with the spotify_client_id, being Spotify's identifier
@@ -2440,7 +2460,7 @@ class spotify(object):
             if item['client_id'] == client_id:
                 code_verifier = item['code_verifier']
                 self.auth_requests.remove(item)
-                
+
         url = 'https://accounts.spotify.com/api/token'
         headers = {
             'Content-Type': ['application/x-www-form-urlencoded']
@@ -2491,21 +2511,31 @@ class spotify(object):
                     access_token,
                     refresh_token,
                         expires_in):
-                    query = '''SELECT COUNT(*) FROM spotify_auth WHERE client_id = ?'''
-                    tx.execute(query, (client_id,))
+                    query = '''SELECT COUNT(*) FROM spotify_auth WHERE user_id = ?'''
+                    tx.execute(query, (user_id,))
                     if tx.fetchone()[0]:
                         query = '''	UPDATE spotify_auth SET
 									access_token = ?,
 									refresh_token = ?,
-									expires_in = ?,
-                                    user_id = ?
-									WHERE client_id = ?'''
+									expires_in = ?
+									WHERE user_id = ?'''
                     else:
                         query = '''	INSERT INTO spotify_auth
-								(access_token, refresh_token, expires_in, user_id, client_id)
-								VALUES (?,?,?,?, ?)'''
+								(access_token, refresh_token, expires_in, user_id)
+								VALUES (?,?,?,?)'''
                     tx.execute(query, (access_token,
-                                       refresh_token, expires_in, user_id, client_id))
+                                       refresh_token, expires_in, user_id))
+                    query = '''SELECT COUNT(*) FROM spotify_auth_clients WHERE client_id = ?'''
+                    tx.execute(query, (client_id,))
+                    if tx.fetchone()[0]:
+                        query = '''	UPDATE spotify_auth_clients SET
+									user_id = ?
+									WHERE client_id = ?'''
+                    else:
+                        query = '''	INSERT INTO spotify_auth_clients
+								(user_id, client_id)
+								VALUES (?,?)'''
+                    tx.execute(query, (user_id, client_id))
 
                 def after(result=None):
                     response = '<html><script>{}</script></html>'
@@ -2519,6 +2549,14 @@ class spotify(object):
                     return error("There was a problem obtaining user's country. Aborting")
                 client.user_id = result['id']
                 client.country = result['country']
+
+                self.update_all_clients_for_user(
+                    client.user_id,
+                    client.access_token,
+                    client.refresh_token,
+                    client.expires_in
+                )
+
                 d = save_tokens(
                     self,
                     client_id,
@@ -2535,3 +2573,10 @@ class spotify(object):
 
         d.addCallback(process_token)
         return d
+
+    def update_all_clients_for_user(self, user_id, access_token, refresh_token, expires_in):
+        for cid, client in self.clients._clients.items():
+            if client.user_id == user_id:
+                client.access_token = access_token
+                client.refresh_token = refresh_token
+                client.expires_in = expires_in

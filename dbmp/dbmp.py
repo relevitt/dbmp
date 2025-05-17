@@ -6,6 +6,7 @@ from .paths import CERTFILE, KEYFILE, WEBPATH, Musicpath
 from .config import PORT, WS_PORT, SSL_PORT, WSS_PORT, SP_PORT
 from .config import ERRLOG_TAIL_EXECUTABLE, ERRLOG_TAIL_ARGS
 from .config import GOOGLE_KEY, GOOGLE_CX
+from .db_updates import updates
 from .meta import __version__
 from .util import util, dbpooled, database_serialised
 from .util import print_browser_connection_hint, IP
@@ -58,7 +59,6 @@ warnings.filterwarnings(
 log = getLogger('dbmp.dbmp')
 
 
-
 objects = {
     'config': 0,
     'spserverfactory': 0,
@@ -90,6 +90,7 @@ class Config:
         'dbplayer_mute': int,
         'dbplayer_vol': int,
         'spotify_track_cache_last_sync': int,
+        'db_version': int,
         # Add more known type-casting rules here if needed
     }
 
@@ -123,6 +124,22 @@ class Config:
 
     def when_ready(self):
         return self._load_d
+
+    def apply_pending_updates(self):
+
+        @database_serialised
+        @dbpooled
+        def execute_update(tx, self, query):
+            tx.executescript(query)
+
+        current_version = self.get("version", 0)
+
+        while current_version in updates:
+            log.info(
+                f"Applying DB update {current_version} → {current_version + 1}")
+            execute_update(self, updates[current_version]).addErrback(logError)
+            current_version += 1
+            self.set('version', current_version)
 
     @database_serialised
     @dbpooled
@@ -574,6 +591,7 @@ def main():
     def after_config_loaded(_):
         if not config.get("app_version"):
             config.set("app_version", __version__)
+        config.apply_pending_updates()
         wsfactory = WSFactory()
         objects['spserverfactory'] = spServerFactory(wsfactory)
         setup_logging(wsfactory)
