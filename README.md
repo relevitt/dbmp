@@ -6,6 +6,22 @@ dbmp is designed to run on Linux. It has currently been tested only on Ubuntu, b
 
 ---
 
+## Screenshots
+
+### Main Interface
+![Sonos Queue](/assets/01%20Main%20Page%20Sonos%20Queue.png)
+
+### Search Spotify
+![Search Spotify](/assets/02%20Search%20Spotify.png)
+
+### Spotify Artist Result
+![Spotify Artist Result](/assets/03%20Search%20Spotify%20Result%20Artist.png)
+
+### Spotify Album Result
+![Spotify Album Result](/assets/04%20Search%20Spotify%20Result%20Album.png)
+
+---
+
 ## 🔧 Installation
 
 To set up dbmp:
