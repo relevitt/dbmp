@@ -34,7 +34,7 @@ W.system.create_cmd_and_get_jsonStr = function (cmd, args) {
 W.system.change = function (s) {
   if (W.system.object != s) {
     W.system.init(s);
-    W.util.setCookie("system", s);
+    localStorage.setItem("system", s)
     W.data.WS_onopen();
   }
 };
@@ -95,13 +95,13 @@ W.system.showSection = function (sectionId) {
 };
 
 W.util.ready(function () {
-  var s = W.util.getCookie("system");
+  let s = localStorage.getItem("system");
   if (s === "") s = "dbmp";
   W.system.init(s);
-  var client_id = W.util.getCookie("client_id");
+  let client_id = localStorage.getItem("client_id");
   if (client_id === "") {
     client_id = W.util.getUUID();
-    W.util.setCookie("client_id", client_id);
+    localStorage.setItem("client_id", client_id);
   }
   W.system.client_id = client_id;
   var el = document.querySelector("#system-player");

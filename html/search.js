@@ -1166,7 +1166,7 @@ W.search.change_category = function (target) {
     .replace("-", "_");
   if (W.search.category != category) {
     W.search.init(category, true);
-    W.util.setCookie("search_new_category", category);
+    localStorage.setItem("search_new_category", category);
   }
 };
 
@@ -1260,7 +1260,7 @@ W.search.set_search_module = function (s, no_init) {
   );
   if (no_init) return;
   if (categories.indexOf(W.search.category) == -1) {
-    W.util.setCookie("search_new_category", "artists");
+    localStorage.setItem("search_new_category", "artists");
     W.search.init("artists");
     return;
   }
@@ -1294,9 +1294,9 @@ W.search.set_buttons = function (parent, buttons, categories, selected_button) {
 W.util.ready(function () {
   // resizing
   W.util.mediaQuery.addEventListener("change", W.util.hyphenate);
-  //cookies
-  var c = W.util.getCookie("search_new_category");
-  if (c == "") c = "artists";
+  //stored data
+  var c = localStorage.getItem("search_new_category");
+  if (!c) c = "artists";
   W.search.init(c);
   //buttons
   W.search.CategoryButtons = {};

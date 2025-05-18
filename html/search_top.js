@@ -51,7 +51,7 @@ W.search_top.close = function () {
   if (W.search_top.stored_settings.is_set) {
     W.search.category = W.search_top.stored_settings.category;
     W.search_top.init(W.search_top.stored_settings.object);
-    W.util.setCookie("search", W.search_top.stored_settings.object);
+    localStorage.setItem("search", W.search_top.stored_settings.object);
     W.search_top.stored_settings.is_set = false;
   }
   W.searchVisible = false;
@@ -83,7 +83,7 @@ W.search_top.change = function (s, no_search) {
     W.search.close();
     W.search_top.init(s);
     W.search.set_search_module(s);
-    W.util.setCookie("search", s);
+    localStorage.setItem("search", s);
     if (W.util.isDesktop()) W.search_top.TxtInput.focus();
     no_search || W.search.onTxtInputChanged();
   }
@@ -128,8 +128,8 @@ W.search_top.TxtInputToggle = function (state) {
 };
 
 W.util.ready(function () {
-  var s = W.util.getCookie("search");
-  if (s == "") s = "database";
+  var s = localStorage.getItem("search");
+  if (!s) s = "database";
   W.search_top.init(s);
   document.getElementById("search-escape").onclick =
     W.keyboard.simulateEscapeKey;
