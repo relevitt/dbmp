@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from .error import logError
+from .config import PORT
 from twisted.web.http_headers import Headers
 from twisted.web.client import Agent, BrowserLikeRedirectAgent, readBody
 from twisted.internet import reactor, defer
+from urllib.parse import urljoin
 from collections import OrderedDict
 from zipfile import ZipFile
 import mutagen
@@ -16,6 +18,8 @@ log = getLogger(__name__)
 
 AUDIO_EXTS = ['.aac', '.aiff', '.alac', '.flac', '.m4a', '.mp3',
               '.mp4', '.m4p', '.ogg', '.pcm', '.shn', '.wav', '.wma']
+
+BASE_URL = f"http://localhost:{PORT}"
 
 
 def is_music(path): return True if os.path.splitext(
@@ -171,6 +175,8 @@ def coverart_make_image(filename, uris):
         log.info('Exiting coverart_make_image')
 
     for uri in uris:
+        if uri.startswith('/'):
+            uri = urljoin(BASE_URL, uri)
         dlist.append(httpRequest('GET', uri).addErrback(logError))
     d = defer.DeferredList(dlist)
     d.addCallback(make_image)

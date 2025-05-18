@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .util import create_album_art_uri
 from .util import snapshot
 from .util import dbpooled
 from .util import spotify_cache_serialised
@@ -12,6 +11,14 @@ import time
 from twisted.internet import defer
 from .logging_setup import getLogger
 log = getLogger(__name__)
+
+
+def create_album_art_uri(discid, timestamp):
+    '''
+    Returns an album art uri in the form recognised
+    by the '/get_cover' cmd to the server.
+    '''
+    return '/get_cover?i={}&t={}'.format(discid, timestamp or 0)
 
 
 # At first I wanted to keep data in playlist_data nicely grouped by pid.
