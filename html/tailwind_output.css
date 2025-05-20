@@ -1488,6 +1488,10 @@ progress::-webkit-progress-value {
   width: 1rem;
 }
 
+.w-48 {
+  width: 12rem;
+}
+
 .w-6 {
   width: 1.5rem;
 }
@@ -2024,6 +2028,10 @@ progress::-webkit-progress-value {
   border-radius: 0.125rem;
 }
 
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+
 .\!border-2 {
   border-width: 2px !important;
 }
@@ -2291,6 +2299,10 @@ progress::-webkit-progress-value {
 
 .p-3 {
   padding: 0.75rem;
+}
+
+.p-4 {
+  padding: 1rem;
 }
 
 .p-\[4px\] {
@@ -2665,6 +2677,11 @@ progress::-webkit-progress-value {
 .text-gray-400 {
   --tw-text-opacity: 1;
   color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.text-gray-500 {
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
 }
 
 .text-gray-600 {

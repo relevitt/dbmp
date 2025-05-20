@@ -526,7 +526,8 @@ W.search.new_search = function (e, args = {}) {
     metadata.search_type = "related_artists";
   } else if (args.bespoke_search && args.bespoke_search == "biography") {
     get_function = undefined;
-    get_cmd = "covers.wikipedia_get_biography";
+    get_cmd = "covers.wikipedia_get_biography_summary";
+    // get_cmd = "covers.wikipedia_get_biography";
     search_term = metadata_was.artist;
     metadata.artist = metadata_was.artist;
     metadata.artistid = metadata_was.artistid;
@@ -807,44 +808,84 @@ W.search.display_biography = function () {
 };
 
 W.search.build_biography = function () {
-  var results = W.search.dataObject.data[0];
-  var get_page = function (e) {
-    var jsonStr = W.system.get_jsonStr("covers.wikipedia_get_biography_page");
-    jsonStr.args.page = e.target.innerHTML;
-    var cb = function (r) {
-      results.extract = r.results;
+  let results = { summary: W.search.dataObject.data[0] };
+
+  function get_page(e) {
+    const jsonStr = W.system.get_jsonStr(
+      "covers.wikipedia_get_biography_summary",
+    );
+    jsonStr.args.id = e.target.innerHTML;
+    function cb(r) {
+      results.summary = r.results.results[0];
       build_bio();
-    };
+    }
     W.util.JSONpost("/json", jsonStr, cb);
-  };
-  var build_bio = function () {
+  }
+
+  function get_disambiguation() {
+    if (results.disambiguation) build_disambiguation();
+    else {
+      const jsonStr = W.system.get_jsonStr(
+        "covers.wikipedia_get_disambiguation",
+      );
+      jsonStr.args.id = W.search.dataObject.id;
+      W.util.JSONpost("/json", jsonStr, build_disambiguation);
+    }
+  }
+
+  function build_bio() {
+    const extract = results.summary.extract;
+    const image = results.summary.image;
+    const title = results.summary.title;
+    const description = results.summary.description;
+
     W.search.switch_container(W.search.ArtistSubContainerThree, {
       category: "artist",
     });
-    W.search.resultsUL.innerHTML = results.extract;
+
     document.querySelector("#search-artist-right-disambiguation").onclick =
-      function () {
-        build_disambiguation();
-      };
-  };
-  var build_disambiguation = function () {
+      get_disambiguation;
+
+    let bio = W.search.WikipediaBio.cloneNode(true);
+    bio.querySelector(".wikipedia-bio-title").textContent = title;
+    bio.querySelector(".wikipedia-bio-description").textContent = description;
+    if (image) bio.querySelector("img").src = image;
+    else bio.querySelector(".wikipedia-bio-image").innerHTML = "";
+    bio.querySelector(".wikipedia-bio-extract").innerHTML = extract;
+    W.search.resultsUL.appendChild(bio);
+
+    document.querySelector("#wikipedia-show-full").onclick = function () {
+      const url = W.util.isDesktop()
+        ? results.summary.content_urls.desktop.page
+        : results.summary.content_urls.mobile.page;
+      window.open(url, "_blank");
+    };
+  }
+
+  function build_disambiguation(e) {
+    if (e) results.disambiguation = e.results.disambiguation;
     W.search.switch_container(W.search.ArtistSubContainerFour, {
       category: "artist",
     });
-    var LI;
-    for (var i = 0; i < results.metadata[1].length; i++) {
-      LI = W.search.RowDisambiguation.cloneNode(true);
-      LI.children[0].innerHTML = results.metadata[1][i];
-      LI.children[0].onclick = get_page;
-      LI.children[1].innerHTML = results.metadata[2][i];
-      W.search.resultsUL.appendChild(LI);
+    if (results.disambiguation.length) {
+      results.disambiguation.forEach((entry) => {
+        let LI = W.search.RowDisambiguation.cloneNode(true);
+        LI.children[0].innerHTML = entry;
+        LI.children[0].onclick = get_page;
+        W.search.resultsUL.appendChild(LI);
+      });
+    } else {
+      W.search.resultsUL.innerHTML = `No disambiguation results for
+    <i>"${results.summary.title}"</i>`;
     }
     document.querySelector("#search-artist-right-disambiguation-back").onclick =
       function () {
         build_bio();
       };
-  };
-  build_bio();
+  }
+
+  if (results.type === "disambiguation") get_disambiguation();
+  else build_bio();
 };
 
 W.search.display_playlists = function () {
@@ -1402,6 +1443,9 @@ W.util.ready(function () {
     .cloneNode(true);
   W.search.RowDisambiguation = document
     .querySelector("#search-artist-right-subcontainer-four li")
+    .cloneNode(true);
+  W.search.WikipediaBio = document
+    .querySelector(".wikipedia-bio")
     .cloneNode(true);
   //switch containers
   W.search.switch_container(W.search.ArtistAlbumSubContainerOne, {

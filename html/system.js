@@ -96,10 +96,10 @@ W.system.showSection = function (sectionId) {
 
 W.util.ready(function () {
   let s = localStorage.getItem("system");
-  if (s === "") s = "dbmp";
+  if (!s) s = "dbmp";
   W.system.init(s);
   let client_id = localStorage.getItem("client_id");
-  if (client_id === "") {
+  if (!client_id) {
     client_id = W.util.getUUID();
     localStorage.setItem("client_id", client_id);
   }

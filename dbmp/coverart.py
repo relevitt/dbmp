@@ -233,7 +233,7 @@ class covers(object):
         def get_data(tx, self, discid):
             query = '''SELECT artist, disc.title AS title, filename FROM artist
                             JOIN disc ON disc.artistid = artist.id
-                            JOIN song ON song.discid = disc.id 
+                            JOIN song ON song.discid = disc.id
                             WHERE disc.id = ?
                             ORDER BY track_num LIMIT 1'''
             tx.execute(query, (discid,))
@@ -569,83 +569,65 @@ class covers(object):
 
 # Wikipedia search
 
-    def wikipedia_get_biography(self, args):
+    def wikipedia_get_disambiguation(self, args):
+        searchterm = args['id']
+
+        url = 'https://en.wikipedia.org/w/api.php?'
+        url += 'action=opensearch'
+        url += '&search=' + urllib.parse.quote(searchterm.encode('utf8'))
+        url += '&limit=20&redirects=resolve'
+        url += '&namespace=0'
+        url += '&utf8=&format=json'
+
+        d = self.search({'url': url})
+
+        def process(data):
+            try:
+                # titles, descriptions, urls
+                return {'disambiguation': data[1]}
+            except Exception:
+                log.exception('Error processing disambiguation results')
+            return {'disambiguation': []}
+
+        def error(e):
+            logError(e)
+            return {'disambiguation': []}
+
+        d.addCallback(process)
+        d.addErrback(error)
+        return d
+
+    def wikipedia_get_biography_summary(self, args):
+
+        searchterm = urllib.parse.quote(args['id'], safe='')
+        url = f'https://en.wikipedia.org/api/rest_v1/page/summary/{searchterm}'
+
+        res = {
+            'startIndex': 0,
+            'totalRecords': 1,
+            'id': searchterm,
+            'results': []
+        }
 
         def get_data():
-            searchterm = args['id']
-            res = {}
-            res['startIndex'] = 0
-            res['totalRecords'] = 1
-            res['id'] = searchterm
-            res['results'] = [{'metadata': [[], [], []], 'extract': ''}]
-            url = 'https://en.wikipedia.org/w/api.php?'
-            url += 'action=opensearch'
-            url += '&search=' + \
-                urllib.parse.quote(searchterm.encode('utf8'))
-            url += '&limit=20&redirects=resolve'
-            url += '&utf8=&format=json'
-
             d = self.search({'url': url})
 
-            def process1(data):
-                try:
-                    if len(data[1]):
-                        return process2(data)
-                except:
-                    log.exception('Problem in process1')
-                log.warning(
-                    'Could not retrieve data from Wikipedia for %s',
-                    searchterm)
+            def process(data):
+                res['results'] = [{
+                    'title': data.get('title'),
+                    'description': data.get('description'),
+                    'extract': data.get('extract'),
+                    'image': data.get('thumbnail', {}).get('source'),
+                    'content_urls': data.get('content_urls', {}),
+                    'type': data.get('type'),
+                }]
                 return res
 
-            def process2(data):
-
-                d = self.wikipedia_get_biography_extract(data[1][0])
-
-                def unpack(result):
-                    res['results'][0] = {'metadata': data, 'extract': result}
-                    return res
-
-                d.addCallback(unpack)
-                return d
-
-            def error(e):
-                logError(e)
-                return res
-
-            d.addCallback(process1)
-            d.addErrback(error)
-            return d
-
-        return get_data()
-
-    def wikipedia_get_biography_extract(self, searchterm):
-
-        def get_data():
-            url = 'https://en.wikipedia.org/w/api.php?'
-            url += 'action=query'
-            url += '&titles=' + \
-                urllib.parse.quote(searchterm.encode('utf8'))
-            url += '&prop=extracts'
-            url += '&utf8=&format=json'
-            d = self.search({'url': url})
-            d.addCallback(unpack)
+            d.addCallback(process)
             d.addErrback(logError)
             return d
 
-        def unpack(result):
-            try:
-                result = result['query']['pages']
-                result = result[list(result.keys())[0]]
-                return result['extract']
-            except:
-                log.exception('Problem in unpack')
-
         return get_data()
-
-    def wikipedia_get_biography_page(self, args):
-
-        return self.wikipedia_get_biography_extract(args['page'])
 
 # Google search
 
