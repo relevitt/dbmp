@@ -13,6 +13,7 @@ GOOGLE_KEY = raw_config.get("GOOGLE_KEY")
 GOOGLE_CX = raw_config.get("GOOGLE_CX")
 SONOS_REGION_SPOTIFY = raw_config.get("SONOS_REGION_SPOTIFY")
 SONOS_ZONES = raw_config.get("SONOS_ZONES")
+SERVE_ROOT_CERT = raw_config.get("SERVE_ROOT_CERT")
 ERRLOG_FILE = sys.argv[1] if len(
     sys.argv) > 1 else os.path.expanduser("~/.dbmp/stderr.txt")
 ERRLOG_TAIL_EXECUTABLE = "/usr/bin/tail"

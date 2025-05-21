@@ -285,6 +285,8 @@ W.data.WS_receive = function (event) {
     case "password":
       // true or false
       W.data.password_set = items.password_set;
+    case "root_cert":
+      W.data.root_cert_available = items.root_cert;
   }
 };
 

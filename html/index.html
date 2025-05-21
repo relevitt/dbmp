@@ -1532,6 +1532,74 @@
         class="W-popup-directory ml-[4px] inline-block overflow-auto max-h-[400px] min-w-[350px]"
       ></div>
     </div>
+    <!--Download Root Certificate-->
+    <!-- These elements are removed from document.body and used only
+		for cloning -->
+    <div
+      class="download-root-certificate p-4 max-w-[500px] whitespace-normal break-words"
+    >
+      <p class="mb-2">
+        This app uses a self-signed SSL certificate for secure connections. Some
+        devices may show security warnings unless the certificate is trusted.
+      </p>
+      <p class="mb-2">
+        You can download and install the root certificate below to trust this
+        server.
+        <strong>Only do this on devices you control and trust.</strong>
+      </p>
+      <a
+        href="/rootCA.pem"
+        download="rootCA.pem"
+        class="W-button block text-center my-4"
+      >
+        Download Certificate
+      </a>
+
+      <div class="mb-4">
+        <p class="font-bold mb-1">To install on Android:</p>
+        <ol class="list-decimal pl-6 text-sm leading-snug mb-2">
+          <li>Download the file above.</li>
+          <li>
+            Open <strong>Settings</strong> &gt; <strong>Security</strong> &gt;
+            <strong>Encryption &amp; credentials</strong>.
+          </li>
+          <li>
+            Select <strong>Install a certificate</strong> &gt;
+            <strong>CA certificate</strong>.
+          </li>
+          <li>Choose <code>rootCA.pem</code> and confirm installation.</li>
+        </ol>
+        <p class="text-red-600 text-sm mt-1">
+          ⚠️ Some apps may not trust certificates installed this way unless
+          added to the system store (requires root).
+        </p>
+      </div>
+
+      <div class="mb-2">
+        <p class="font-bold mb-1">To install on iPhone (iOS):</p>
+        <ol class="list-decimal pl-6 text-sm leading-snug mb-2">
+          <li>Tap the button above to download <code>rootCA.pem</code>.</li>
+          <li>If prompted, choose to allow the download.</li>
+          <li>Open the <strong>Settings</strong> app.</li>
+          <li>
+            Go to <strong>General</strong> &gt;
+            <strong>VPN &amp; Device Management</strong>.
+          </li>
+          <li>Under "Downloaded Profile", tap <code>rootCA.pem</code>.</li>
+          <li>Tap <strong>Install</strong> and follow the prompts.</li>
+          <li>
+            Then go to <strong>General</strong> &gt; <strong>About</strong> &gt;
+            <strong>Certificate Trust Settings</strong>.
+          </li>
+          <li>Enable full trust for the newly installed root certificate.</li>
+        </ol>
+        <p class="text-yellow-700 text-sm mt-1">
+          ℹ️ On iOS 16+, you may need to use Safari and allow the download
+          explicitly.
+        </p>
+      </div>
+    </div>
+
     <!--Import Popup Buttons-->
     <!-- These elements are removed from document.body and used only
 		for cloning -->

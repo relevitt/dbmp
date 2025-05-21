@@ -301,6 +301,10 @@ W.util.ready(function () {
         label: "Set system password",
         onclick: W.util.setPassword,
       },
+      {
+        label: "Download root certificate",
+        onclick: W.system.download_root_certificate,
+      },
     ],
     init: () => {
       let label = W.data.password_set
@@ -308,6 +312,7 @@ W.util.ready(function () {
         : "Set system password";
       let div = W.queue.systemMenu.menu_objects[4].div;
       div.innerHTML = label;
+      if (!W.data.root_cert_available) W.queue.systemMenu.lockedItems = [5];
     },
     check_auth: true,
   });

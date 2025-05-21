@@ -9,7 +9,7 @@ from .util import database_serialised
 from binaryornot.check import is_binary
 from sqlite3 import OperationalError
 from twisted.internet.utils import getProcessOutput
-from twisted.internet import defer
+from twisted.internet import defer, task, reactor
 from datetime import datetime
 import os
 from .logging_setup import getLogger
@@ -45,6 +45,10 @@ class qimport(qduration):
         self.db_temp_table_counter = 0
         self.mpd = objects['mpd']
         self.set_root()
+        # Check db for songs missing play_time:
+        # 10s after startup and then every 24 hours
+        reactor.callLater(10, self.check_db_for_gaps)
+        task.LoopingCall(self.check_db_for_gaps).start(86400, now=False)
 
     def set_root(self):
         self.root = str(Searchpath.get_path())

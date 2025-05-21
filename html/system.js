@@ -34,7 +34,7 @@ W.system.create_cmd_and_get_jsonStr = function (cmd, args) {
 W.system.change = function (s) {
   if (W.system.object != s) {
     W.system.init(s);
-    localStorage.setItem("system", s)
+    localStorage.setItem("system", s);
     W.data.WS_onopen();
   }
 };
@@ -92,6 +92,22 @@ W.system.showSection = function (sectionId) {
   section.classList.remove("hidden");
   section.classList.remove("lg:flex");
   section.classList.add("flex");
+  if (section.id === "queue-div-frame") W.queue.scroll_to_now();
+};
+
+W.system.download_root_certificate = function () {
+  if (!W.data.root_cert_available) return;
+
+  const downloadUrl = "/rootCA.pem"; // Adjust if needed
+  const popup = W.util.Popup;
+
+  popup.empty();
+  popup.bar.innerHTML = "Trust This App's Certificate";
+  popup.content.appendChild(W.system.RootCertHTML.cloneNode(true));
+  popup.resize(400);
+  popup.modal(true);
+  popup.show();
+  popup.center();
 };
 
 W.util.ready(function () {
@@ -114,4 +130,6 @@ W.util.ready(function () {
     W.system.change("sonos");
   };
   W.util.dragclick(el, 500);
+  W.system.RootCertHTML = document.querySelector(".download-root-certificate");
+  document.body.removeChild(W.system.RootCertHTML);
 });

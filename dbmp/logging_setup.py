@@ -7,7 +7,7 @@ import json
 import time
 import functools
 from datetime import datetime
-from twisted.internet import task, defer
+from twisted.internet import task
 
 WS_DATEFMT = "%Y-%m-%d %H:%M:%S.%f"
 FORMAT = '%(asctime)s:%(msecs)03d: %(levelname)-9s %(name)-15s %(message)s'

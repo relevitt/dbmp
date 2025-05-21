@@ -1,20 +1,35 @@
 # -*- coding: utf-8 -*-
 
+from .sp_functions import is_music
+from .error import logError
+from .util import mpd_check_connected, ms_to_str
+from .util import dbpooled
+from twisted.internet import defer
 from .logging_setup import getLogger
 log = getLogger(__name__)
 
-import os
-from twisted.internet import defer
-
-from .util import dbpooled
-from .util import mpd_check_connected, ms_to_str
-from .error import logError
-from .sp_functions import is_music
 
 class qduration(object):
 
     @mpd_check_connected(None)
-    def get_duration(self, discid):
+    @defer.inlineCallbacks
+    def check_db_for_gaps(self):
+
+        @dbpooled
+        def get_disc_ids(tx, self):
+            query = '''SELECT DISTINCT discid FROM song WHERE play_time IS NULL'''
+            tx.execute(query)
+            return [row["discid"] for row in tx.fetchall()]
+
+        try:
+            discids = yield get_disc_ids(self)
+            for discid in discids:
+                yield self.get_duration(discid, warn=False)
+        except Exception as e:
+            log.exception(e)
+
+    @mpd_check_connected(None)
+    def get_duration(self, discid, warn=True):
         song_ids = []
         query = '''SELECT id, filename FROM song WHERE
 			discid = ? AND play_time IS NULL'''
@@ -28,7 +43,7 @@ class qduration(object):
                 else:
                     song_ids.append(row['id'])
                     dlist.append(
-                        self.mpd_get_duration(row['filename']))
+                        self.mpd_get_duration(row['filename'], warn))
             return defer.DeferredList(dlist)
 
         def process2(results):
@@ -92,7 +107,7 @@ class qduration(object):
         query = '''DROP TABLE tmp_song'''
         tx.execute(query)
 
-    def mpd_get_duration(self, filename):
+    def mpd_get_duration(self, filename, warn=True):
 
         d = self.mpd.medialib_get_info(filename)
 
@@ -104,8 +119,8 @@ class qduration(object):
             else:
                 time = 0
                 if isinstance(result, dict):  # If it's a dictionary
-                    time=result.get('Time', 0)
-                    
+                    time = result.get('Time', 0)
+
                 elif isinstance(result, list) and result:  # If it's a non-empty list
                     for entry in result:
                         if isinstance(entry, dict) and 'Time' in entry:
@@ -118,10 +133,13 @@ class qduration(object):
 
         def check_after_adding(result):
             if not result:
-                log.warning('Unable to add {} to mpd databse'.format(filename))
+                if warn:
+                    log.warning(
+                        'Unable to add {} to mpd database'.format(filename))
                 return None
             else:
-                log.info('{} added to mpd database'.format(filename))
+                if warn:
+                    log.info('{} added to mpd database'.format(filename))
                 return result['Time']
 
         d.addCallback(process)

@@ -5,7 +5,7 @@ from .sp_factory import spServerFactory
 from .paths import CERTFILE, KEYFILE, WEBPATH, Musicpath
 from .config import PORT, WS_PORT, SSL_PORT, WSS_PORT, SP_PORT
 from .config import ERRLOG_TAIL_EXECUTABLE, ERRLOG_TAIL_ARGS
-from .config import GOOGLE_KEY, GOOGLE_CX
+from .config import GOOGLE_KEY, GOOGLE_CX, SERVE_ROOT_CERT
 from .db_updates import updates
 from .meta import __version__
 from .util import util, dbpooled, database_serialised
@@ -49,6 +49,7 @@ from twisted.internet import reactor
 from datetime import datetime
 from .logging_setup import getLogger, setup_logging, WS_DATEFMT, LogStore
 import warnings
+from pathlib import Path
 
 warnings.filterwarnings(
     "ignore",
@@ -82,6 +83,7 @@ objects = {
     'website': 0,
     'lastfm': 0,
     'log_store': 0,
+    'root_cert': 0,
 }
 
 
@@ -441,6 +443,9 @@ class WSFactory(WebSocketServerFactory):
         self.WS_send(socket, {
                      "type": "password",
                      "password_set": not not objects['config'].get('pwd')})
+        # Tell newly connected client if root certificate is available
+        self.WS_send(socket, {
+                     "type": "root_cert", "root_cert": True if objects['root_cert'] else False})
 
     def WS_remove(self, socket):
         obj = socket.requested_object
@@ -600,6 +605,18 @@ def main():
         reactor.spawnProcess(
             tailProcess, ERRLOG_TAIL_EXECUTABLE, ERRLOG_TAIL_ARGS)
 
+        if SERVE_ROOT_CERT:
+            try:
+                result = subprocess.run(
+                    ['mkcert', '-CAROOT'], capture_output=True, check=True, text=True)
+                caroot = Path(result.stdout.strip())
+                root_cert = caroot / 'rootCA.pem'
+                if root_cert.exists():
+                    objects['root_cert'] = root_cert
+            except Exception as e:
+                # Log the error or handle as needed
+                log.exception(f"Error locating mkcert root cert: {e}")
+
         spf = objects['spserverfactory'].create_subprocess(
             'dbmp_subprocess',
             'dbmp.sp_functions',
@@ -636,6 +653,9 @@ def main():
         root.putChild(b'json', Tjson())
         root.putChild(b'spotify_auth', Tspotify_auth())
         root.putChild(b'config.json', Tconfig_json())
+
+        if objects['root_cert']:
+            root.putChild(b"rootCA.pem", File(str(objects['root_cert'])))
 
         # The Musicpath of the tree is used to serve
         # files to sonos. See create_uri in sonos_util.py
