@@ -312,8 +312,22 @@ W.search.build = function (args) {
         W.search.switch_container(W.search.ArtistAlbumSubContainerOne, params);
         document.querySelector("#search-artist-details-image img").src =
           W.search.dataObject.metadata.artistArtURI;
-        document.querySelector("#search-artist-details-name").innerHTML =
-          W.search.dataObject.metadata.artist;
+        if (playlist_mode && W.search_top.object == "spotify") {
+          let display_name = W.search.dataObject.metadata.artist;
+          let spotify_id = W.search.dataObject.metadata.artistid.split(":")[2];
+          let followers = W.search.dataObject.metadata.followers;
+          let html = `
+            ${display_name}
+            <br>
+            <span class="text-sm italics">
+            (id: ${spotify_id} / followers: ${followers})
+            </span>
+          `;
+          document.querySelector("#search-artist-details-name").innerHTML =
+            html;
+        } else
+          document.querySelector("#search-artist-details-name").innerHTML =
+            W.search.dataObject.metadata.artist;
         document.querySelector("#search-artist-album-details-image img").src =
           W.search.dataObject.metadata.albumArtURI;
         document.querySelector("#search-artist-album-details-name").innerHTML =

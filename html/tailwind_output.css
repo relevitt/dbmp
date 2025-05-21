@@ -2301,10 +2301,6 @@ progress::-webkit-progress-value {
   padding: 0.75rem;
 }
 
-.p-4 {
-  padding: 1rem;
-}
-
 .p-\[4px\] {
   padding: 4px;
 }

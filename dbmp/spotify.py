@@ -1854,10 +1854,21 @@ class spotify(object):
                     user = result['owner']['id']
                     metadata['artist'] = result['owner']['display_name'] or user
                     metadata['artistid'] = result['owner']['uri']
-                    metadata['artistArtURI'] = self.get_image_uri(
-                        result['owner'].get('images', []), 'artists')
                     metadata['item_type'] = 'playlist'
                     metadata['editable'] = user == client.user_id
+                    return self.search_spotify_id_cached({
+                        'client_id': client_id,
+                        'endpoint': 'https://api.spotify.com/v1/users/{}',
+                        'item_id': user
+                    })
+
+                def get_user_data(result):
+                    if result == 'CANCELLED':
+                        return 'CANCELLED'
+                    metadata['artistArtURI'] = self.get_image_uri(
+                        result.get('images', []), 'artists')
+                    metadata['followers'] = result.get(
+                        'followers', {}).get('total', 0)
                     if not metadata['editable']:
                         return self.search_spotify_id_cached({
                             'client_id': client_id,
@@ -1873,6 +1884,7 @@ class spotify(object):
                         metadata['followed'] = result[0]
 
                 d.addCallback(get_user)
+                d.addCallback(get_user_data)
                 d.addCallback(get_followed)
 
         elif category == 'songs_from_track_uri':
@@ -2394,18 +2406,26 @@ class spotify(object):
 
         def process_info(rows):
             dlist = []
+            users = {}
 
             for row in rows:
                 client_id = row.pop('client_id')
+                user_id = row['user_id']
                 self.clients[client_id] = row
-                d = self.get(client_id, 'https://api.spotify.com/v1/me')
+                if user_id not in users:
+                    users[user_id] = [client_id]
+                    d = self.get(client_id, 'https://api.spotify.com/v1/me')
 
-                def process(result, client_id=client_id):
-                    if result:
-                        self.clients[client_id].country = result['country']
+                    def process(result, user_id=user_id):
+                        if result:
+                            country = result['country']
+                            for client_id in users[user_id]:
+                                self.clients[client_id].country = country
 
-                d.addCallback(process)
-                dlist.append(d)
+                    d.addCallback(process)
+                    dlist.append(d)
+                else:
+                    users[user_id].append(client_id)
 
             # Wait for all callbacks to complete
             return defer.DeferredList(dlist)
