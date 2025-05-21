@@ -2,6 +2,7 @@
 
 from .paths import MUSICPATH
 from .error import logError, mpdException
+from .config import MPD_PORT
 from twisted.internet.utils import getProcessOutput
 from twisted.python.failure import Failure
 from twisted.protocols.basic import LineReceiver
@@ -114,7 +115,7 @@ class mpd(object):
         d.addErrback(psFailure)
 
     def start(self):
-        reactor.connectTCP('localhost', 6600, self.factory)
+        reactor.connectTCP('localhost', MPD_PORT, self.factory)
 
     def connectionMade(self):
         self.connected = True

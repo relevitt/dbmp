@@ -36,6 +36,10 @@ WS_PORT = 8003
 # SP_PORT is used for communication with subprocesses
 SP_PORT = 8004
 
+# MPD_PORT is the port on which mpd listens for connections. This should match the
+# corresponding value in your mpd.conf file
+MPD_PORT = 6600
+
 # Google custom search credentials. If you wish to perform a google search for
 # artwork, please add your credentials here:
 GOOGLE_KEY = ""
