@@ -39,14 +39,6 @@ W.queue_menus.getTopMenuParams = function () {
   }
   args.items.push(
     {
-      label: "Clear all tracks",
-      onclick: W.queue.ondelete_all,
-    },
-    {
-      label: "Clear selected tracks",
-      onclick: W.queue.ondelete_selected,
-    },
-    {
       label: "Copy selected tracks",
       onclick: W.queue_commands.copySelected,
     },
@@ -78,6 +70,14 @@ W.queue_menus.getTopMenuParams = function () {
           label: "at end",
         },
       ],
+    },
+    {
+      label: "Clear all tracks",
+      onclick: W.queue.ondelete_all,
+    },
+    {
+      label: "Clear selected tracks",
+      onclick: W.queue.ondelete_selected,
     },
   );
   if (W.system.object == "dbmp") {
@@ -169,12 +169,12 @@ W.queue_menus.topMenuInit = function (index, e) {
       unlockText = "Unlock";
     }
     if (!W.queue.getSelected().length)
-      W.queue.topMenu.lockedItems.push(3, 4, 5, 10);
+      W.queue.topMenu.lockedItems.push(2, 3, 6, 10);
     if (false) W.queue.topMenu.lockedItems.push(5); //TODO check whether clipboard has content
     W.queue.topMenu.container.children[unlock].innerHTML = unlockText;
   } else {
     if (!W.queue.getSelected().length)
-      W.queue.topMenu.lockedItems.push(1, 2, 3, 9);
+      W.queue.topMenu.lockedItems.push(0, 1, 4, 9);
     if (false) W.queue.topMenu.lockedItems.push(3); //TODO check whether clipboard has content
     if (queue.zones.length < 2) W.queue.topMenu.lockedItems.push(6);
     if (W.data.status.queues.length < 2) W.queue.topMenu.lockedItems.push(7);
