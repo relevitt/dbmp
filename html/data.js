@@ -5,6 +5,9 @@ function normalizeMessage(message) {
   return message.replace(/\d+/g, "{count}"); // Replace numbers with "{count}"
 }
 
+W.data._ws_reconnect_pending = false;
+W.data._last_ws_reconnect_time = 0;
+
 /*W.data.queue is an array with the client copy of the queue data. */
 
 W.data.queue = new W.dataObject({
@@ -109,6 +112,7 @@ to WS updates only for one group, being the one we are displaying.
 */
 
 W.data.WS_receive = function (event) {
+  W.data._last_ws_message_time = Date.now();
   var items = JSON.parse(event.data);
   switch (items.type) {
     case "init":
@@ -299,6 +303,34 @@ W.data.WS_checkclosed = function (event) {
   });
 };
 
+W.data.WS_force_reconnect = function () {
+
+  const now = Date.now();
+  if (now - W.data._last_ws_reconnect_time < 5000) return;
+  if (W.data._ws_reconnect_pending) return;  // debounce guard
+  W.data._ws_reconnect_pending = true;
+  W.data._last_ws_reconnect_time = now;
+
+  W.data.WS_config.forEach((config) => {
+    let socket = W.data.WS_sockets[config.name];
+    if (socket) {
+      try {
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.close();
+      } catch (e) {
+        console.error("Error closing socket:", e);
+      }
+    }
+    W.data.WS_socket_create(config);
+  });
+  setTimeout(() => {
+    W.data._ws_reconnect_pending = false;
+  }, 1000);
+};
+
 W.data.WS_send_pwd = function (pwd) {
   var jsonStr = {};
   jsonStr.pwd = pwd;
@@ -360,11 +392,21 @@ W.util.ready(function () {
       setInterval(W.data.WS_checkclosed, 1000);
 
       // Handle page visibility changes
-      document.addEventListener("visibilitychange", function () {
-        if (document.visibilityState === "visible") {
-          W.data.WS_checkclosed();
-        }
-      });
+      if (!W.util.isDesktop()) {
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") {
+            W.data.WS_force_reconnect();
+          }
+        });
+      }
+      
+      setInterval(function () {
+        const now = Date.now();
+        const seconds_since_last_msg = (now - W.data._last_ws_message_time) / 1000;
+
+        // If no message for > 10 seconds, force reconnect
+        if (seconds_since_last_msg > 10) W.data.WS_force_reconnect();
+      }, 5000);
     })
     .catch((err) => {
       console.error("Failed to fetch websocket config:", err);
