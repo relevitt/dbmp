@@ -462,7 +462,7 @@ class spotify(object):
             elif category == 'artistTopTracks':
                 endpoint = 'https://api.spotify.com/v1/artists/{}/top-tracks'.format(
                     args['container_id'].split(':')[2])
-                params = {'country': self.users[var['client_id']].country}
+                params = {'country': self.clients[var['client_id']].country}
             else:
                 log.warning('Category not recognised')
                 return return_results()

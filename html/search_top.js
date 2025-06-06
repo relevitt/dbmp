@@ -133,6 +133,10 @@ W.util.ready(function () {
   W.search_top.init(s);
   document.getElementById("search-escape").onclick =
     W.keyboard.simulateEscapeKey;
+  document.getElementById("search-reset").onclick = function () {
+    W.search_top.close();
+    W.search_top.show();
+  };
   document.getElementById("search-database").onclick = function () {
     W.search_top.change("database");
   };

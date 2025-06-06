@@ -63,7 +63,7 @@ W.data.status = 0;
 
 W.data.WS_sockets = {};
 
-W.data.selected_sonos_group_id = 0;
+W.data.selected_sonos_group_id = localStorage.getItem("sonos_group") || 0;
 
 // true of false
 W.data.password_set = false;
@@ -133,6 +133,7 @@ W.data.WS_receive = function (event) {
       // sonos queue when switch the display from sonos to dbmp
       if (W.system.object == "sonos") {
         W.data.selected_sonos_group_id = items.queue.id;
+        localStorage.setItem("sonos_group", items.queue.id);
       }
       break;
     case "queues": // Not used by WS_sonos.py, as 'init' occurs when groups change
@@ -304,10 +305,9 @@ W.data.WS_checkclosed = function (event) {
 };
 
 W.data.WS_force_reconnect = function () {
-
   const now = Date.now();
   if (now - W.data._last_ws_reconnect_time < 5000) return;
-  if (W.data._ws_reconnect_pending) return;  // debounce guard
+  if (W.data._ws_reconnect_pending) return; // debounce guard
   W.data._ws_reconnect_pending = true;
   W.data._last_ws_reconnect_time = now;
 
@@ -399,10 +399,11 @@ W.util.ready(function () {
           }
         });
       }
-      
+
       setInterval(function () {
         const now = Date.now();
-        const seconds_since_last_msg = (now - W.data._last_ws_message_time) / 1000;
+        const seconds_since_last_msg =
+          (now - W.data._last_ws_message_time) / 1000;
 
         // If no message for > 10 seconds, force reconnect
         if (seconds_since_last_msg > 10) W.data.WS_force_reconnect();
