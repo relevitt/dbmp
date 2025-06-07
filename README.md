@@ -133,7 +133,7 @@ dbmp/
 ├── setup/mpd.conf                  ← MPD configuration template
 ├── setup/python_requirements.txt   ← List of Python dependencies
 └── setup/schema.sql                ← SQLite schema file
-
+```
 ---
 
 ## 💬 Troubleshooting & Contributions
