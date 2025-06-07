@@ -513,6 +513,26 @@ class playlists(object):
         d.addCallback(cover)
         return d
 
+    @defer.inlineCallbacks
+    def generate_playlist_from_artist_ids(self, args):
+
+        tracks = []
+
+        for artist_id in args["artist_ids"]:
+            response = yield self.objects["spotify"].get_container_tracks({
+                "client_id": args["client_id"],
+                "container_id": f"spotify:artistTopTracks:{artist_id}"
+            })
+            tracks.extend(response["tracks"][:5])
+
+        self.add_to_playlist({
+            "clear": False,
+            "client_id": args["client_id"],
+            "data_source": "spotify",
+            "tracks": tracks,
+            "name": args["title"]
+        })
+
     @serialised
     @defer.inlineCallbacks
     def add_to_playlist(self, args):

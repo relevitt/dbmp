@@ -305,6 +305,10 @@ W.util.ready(function () {
         label: "Download root certificate",
         onclick: W.system.download_root_certificate,
       },
+      {
+        label: "Generate playlist from artist IDs",
+        onclick: W.queue_commands.import_artist_ids,
+      },
     ],
     init: () => {
       let label = W.data.password_set

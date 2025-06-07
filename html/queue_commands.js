@@ -203,3 +203,70 @@ W.queue_commands.transfer_queue = function (cb, menu_object) {
   // W.search_menus.create_submenu_one(cb, menu_object, "sonos");
   W.search_menus.submenu_one_onclick(cb, menu_object);
 };
+
+W.queue_commands.import_artist_ids = function () {
+  const popup = W.util.Popup;
+  popup.empty();
+  popup.cleanup = function () {
+    W.css.removeClasses(this.bar, "popup_alertbar");
+    this.empty();
+  }.bind(popup);
+  popup.bar.innerHTML = "Import Artist IDs";
+  W.css.addClasses(popup.bar, "popup_alertbar");
+  const div = W.popup.PopupAlert.cloneNode(true);
+  let el = div.querySelector(".W-popup-alert-title");
+  el.innerHTML =
+    "Please select a text file containing Spotify artist IDs (one per line).";
+  el = div.querySelector(".W-popup-alert-button");
+  el.appendChild(
+    W.button(
+      "OK",
+      function () {
+        this.close();
+
+        let input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".txt";
+
+        input.onchange = function (event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const text = e.target.result;
+            const artist_ids = text
+              .split("\n")
+              .map((line) => line.trim())
+              .filter((line) => line.length > 0);
+
+            W.util.getInput({
+              title: "Please enter playlist title",
+              fn: (title) => {
+                const args = {
+                  artist_ids: artist_ids,
+                  title: title,
+                };
+                const jsonStr = W.system.get_jsonStr(
+                  "playlists.generate_playlist_from_artist_ids",
+                  args,
+                );
+                W.util.JSONpost("/json", jsonStr);
+                W.util.toast(
+                  "Your playlist should appear as a new Database playlist.<BR>This may take a few minutes.",
+                  5000,
+                );
+              },
+            });
+          };
+
+          reader.readAsText(file);
+        };
+        input.click();
+      }.bind(popup),
+    ),
+  );
+  popup.content.appendChild(div);
+  popup.show();
+  popup.center();
+};
