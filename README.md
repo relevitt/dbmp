@@ -118,6 +118,14 @@ This allows mpd (running under your user) to connect to PulseAudio.
 
 ---
 
+## Spotify Authorisation
+
+As of May 2025, Spotify classifies dbmp as operating in development mode. This means the app is restricted to a limited number of authorised users and does not have extended Web API quota access.
+
+If you'd like to use your Spotify account with dbmp, you will need to be manually added to Spotify's list of permitted users for the app. If you're interested, please contact [@relevitt on GitHub](https://github.com/relevitt) to request access. Please note that the number of authorised users is capped by Spotify's development mode policy.
+
+---
+
 ## 📂 App Directory Structure
 
 ```plaintext
@@ -145,6 +153,8 @@ This is an early-stage installer. If you encounter any errors during setup:
 - Review `~/.dbmp/config.py` and `~/.mpd/mpd.conf` for configuration issues.
 
 Feedback and contributions are welcome — feel free to open issues or pull requests.
+
+---
 
 ## License
 
