@@ -279,27 +279,15 @@ W.queue_menus.trackMenuTidyUp = () => {
 };
 
 W.util.ready(function () {
-  W.queue.systemMenu = new W.menu({
+  W.queue.userMenu = new W.menu({
     items: [
-      {
-        label: "Import files to database",
-        onclick: W.import.filebrowser,
-      },
       {
         label: "Logging",
         onclick: W.logging.show,
       },
       {
-        label: "Relaunch server",
-        onclick: W.system.relaunch_server,
-      },
-      {
         label: "Connect a Spotify Account",
         onclick: W.spotify.auth,
-      },
-      {
-        label: "Set system password",
-        onclick: W.util.setPassword,
       },
       {
         label: "Download root certificate",
@@ -311,15 +299,36 @@ W.util.ready(function () {
       },
     ],
     init: () => {
+      if (!W.data.root_cert_available) W.queue.userMenu.lockedItems = [2];
+    },
+  });
+  W.queue.systemMenu = new W.menu({
+    items: [
+      {
+        label: "Import files to database",
+        onclick: W.import.filebrowser,
+      },
+      {
+        label: "Relaunch server",
+        onclick: W.system.relaunch_server,
+      },
+      {
+        label: "Set system password",
+        onclick: W.util.setPassword,
+      },
+    ],
+    init: () => {
       let label = W.data.password_set
         ? "Change system password"
         : "Set system password";
-      let div = W.queue.systemMenu.menu_objects[4].div;
+      let div = W.queue.systemMenu.menu_objects[2].div;
       div.innerHTML = label;
-      if (!W.data.root_cert_available) W.queue.systemMenu.lockedItems = [5];
     },
     check_auth: true,
   });
+
+  const user_buttons = document.querySelectorAll(".queue-user-menu");
+  W.queue.userMenu.add(user_buttons[0]);
 
   const system_buttons = document.querySelectorAll(".queue-system-menu");
   W.queue.systemMenu.add(system_buttons[0]);
@@ -330,12 +339,7 @@ W.util.ready(function () {
       index = index + W.data.queue.startIndex;
       W.queue.scroll_to(index);
     }
-    var system_button = system_buttons[0];
-    let sys_menu_showing = W.queue.systemMenu.showing;
-    sys_menu_showing && W.queue.systemMenu.hide();
     if (W.util.isDesktop()) {
-      W.queue.systemMenu.menuDirection = "bottom";
-      W.queue.systemMenu.showingClass = "menu_selected";
       if (W.queue.trackMenu && W.queue.trackMenu.showing) {
         var parent = W.queue.trackMenu.targetElement;
         if (!parent) return;
@@ -344,13 +348,33 @@ W.util.ready(function () {
         let x = Math.floor(rect.left + rect.width / 4);
         W.queue.trackMenu.shift(x);
       }
-    } else {
-      system_button = system_buttons[1];
-      W.queue.systemMenu.menuDirection = "topleft";
-      W.queue.systemMenu.showingClass = "";
     }
-    W.queue.systemMenu.parentElement = system_button;
-    sys_menu_showing && W.queue.systemMenu.show({ target: system_button });
+    [
+      {
+        buttons: user_buttons,
+        menu: W.queue.userMenu,
+      },
+      {
+        buttons: system_buttons,
+        menu: W.queue.systemMenu,
+      },
+    ].forEach((item) => {
+      let buttons = item.buttons;
+      let menu = item.menu;
+      let menu_button = buttons[0];
+      let menu_showing = menu.showing;
+      menu_showing && menu.hide();
+      if (W.util.isDesktop()) {
+        menu.menuDirection = "bottom";
+        menu.showingClass = "menu_selected";
+      } else {
+        menu_button = buttons[1];
+        menu.menuDirection = "topleft";
+        menu.showingClass = "";
+      }
+      menu.parentElement = menu_button;
+      menu_showing && menu.show({ target: menu_button });
+    });
   };
   menu_config();
   W.util.mediaQuery.addEventListener("change", menu_config);

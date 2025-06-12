@@ -398,16 +398,16 @@ W.util.ready(function () {
             W.data.WS_force_reconnect();
           }
         });
+
+        setInterval(function () {
+          const now = Date.now();
+          const seconds_since_last_msg =
+            (now - W.data._last_ws_message_time) / 1000;
+
+          // If no message for > 10 seconds, force reconnect
+          if (seconds_since_last_msg > 10) W.data.WS_force_reconnect();
+        }, 5000);
       }
-
-      setInterval(function () {
-        const now = Date.now();
-        const seconds_since_last_msg =
-          (now - W.data._last_ws_message_time) / 1000;
-
-        // If no message for > 10 seconds, force reconnect
-        if (seconds_since_last_msg > 10) W.data.WS_force_reconnect();
-      }, 5000);
     })
     .catch((err) => {
       console.error("Failed to fetch websocket config:", err);

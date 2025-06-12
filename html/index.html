@@ -125,6 +125,9 @@
                 class="queue-search W-button w-8 h-8 mb-0.5 bg-no-repeat bg-center bg-[url('/icons/search.png')]"
               ></span>
               <span
+                class="queue-user-menu W-button w-8 h-8 mb-0.5 bg-no-repeat bg-center bg-[url('/icons/menu.png')]"
+              ></span>
+              <span
                 class="queue-system-menu W-button w-8 h-8 mb-0.5 bg-no-repeat bg-center bg-[url('/icons/system.png')]"
               ></span>
             </div>
@@ -408,6 +411,12 @@
           class="W-button flex items-center justify-center"
         >
           <i class="fas fa-magnifying-glass text-2xl"></i>
+        </button>
+        <button
+          onclick="W.queue.userMenu.show(event)"
+          class="queue-user-menu W-button flex items-center justify-center"
+        >
+          <i class="fas fa-ellipsis-vertical text-2xl w-6"></i>
         </button>
         <button
           onclick="W.queue.systemMenu.show(event)"

@@ -1645,6 +1645,14 @@ progress::-webkit-progress-value {
   width: 100vw;
 }
 
+.w-3 {
+  width: 0.75rem;
+}
+
+.w-10 {
+  width: 2.5rem;
+}
+
 .min-w-\[250px\] {
   min-width: 250px;
 }
@@ -2282,6 +2290,18 @@ progress::-webkit-progress-value {
 
 .bg-none {
   background-image: none;
+}
+
+.bg-\[url\(\'\/icons\/menu\.png\'\)\] {
+  background-image: url('/icons/menu.png');
+}
+
+.bg-\[url\(\'\/icons\/menu_white\.png\'\)\] {
+  background-image: url('/icons/menu_white.png');
+}
+
+.bg-\[url\(\'\/icons\/menu\.svg\'\)\] {
+  background-image: url('/icons/menu.svg');
 }
 
 .bg-\[position\:-5px_0\] {
