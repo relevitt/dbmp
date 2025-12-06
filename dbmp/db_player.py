@@ -746,7 +746,7 @@ class db_player(db_player_client):
         self.serialise(self.reload).addErrback(logError)
         if 'music' not in self.objects['website'].resource.listStaticNames():
             self.objects['website'].resource.putChild(
-                'music', File(Musicpath.path))
+                b'music', File(Musicpath.path))
 
     # Should a recurring task be scheduled?
     # Should we notify anything through WS?

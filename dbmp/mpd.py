@@ -81,38 +81,50 @@ class mpd(object):
         def psSuccess(result):
             mpd_up = False
             for line in result.splitlines():
-                line = line.decode('utf8')
-                if 'mpd' in line:
-                    if not 'defunct' in line:
-                        mpd_up = True
-                    else:
-                        pid = int(line.split()[0])
-                        os.kill(pid, 9)
+                line = line.decode('utf8', 'ignore')
+                if 'mpd' in line and 'defunct' not in line:
+                    mpd_up = True
+                elif 'mpd' in line and 'defunct' in line:
+                    pid = int(line.split()[0])
+                    os.kill(pid, 9)
+
             if mpd_up:
                 self.start()
             else:
                 mpd_launch()
 
         def psFailure(e):
-            logError(e)
+            log.error('Error running ps to detect mpd: %s', e)
             mpd_launch()
 
         def mpd_launch():
             log.info('Launching mpd')
-            d = getProcessOutput('mpd', errortoo=True)
-            d.addCallback(mpdSuccess)
-            d.addErrback(mpdFailure)
+            # Explicitly pass env in case systemd isn't giving you what you expect
+            d = getProcessOutput(
+                'mpd',
+                # If you want: ('--no-daemon', '/path/to/mpd.conf')
+                errortoo=True,
+                env=os.environ,
+            )
+            d.addCallbacks(mpdSuccess, mpdFailure)
 
         def mpdSuccess(result):
+            # result is bytes
+            text = result.decode('utf-8', 'ignore')
+            if text.strip():
+                log.info('mpd output (exit 0):\n%s', text)
+            else:
+                log.info('mpd exited cleanly with no output')
             self.start()
 
-        def mpdFailure(e):
-            log.warning('There was a problem launching mpd')
-            logError(e)
+        def mpdFailure(f):
+            # f is a twisted.python.failure.Failure
+            log.warning('There was a problem launching mpd: %s', f.getErrorMessage())
+            logError(f)  # keep your existing error logging too
 
         d = getProcessOutput('ps', ('-eo', 'pid,comm'), errortoo=True)
-        d.addCallback(psSuccess)
-        d.addErrback(psFailure)
+        d.addCallbacks(psSuccess, psFailure)
+
 
     def start(self):
         reactor.connectTCP('localhost', MPD_PORT, self.factory)
